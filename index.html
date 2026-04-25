@@ -15,7 +15,6 @@ body {
 canvas {
   display: block;
   margin: auto;
-  background: #0e1a1f;
 }
 </style>
 </head>
@@ -44,6 +43,23 @@ let spawnInterval = 90;
 let scoreTimer = 0;
 let deathTimer = 0;
 let blinkTimer = 0;
+
+// elementos fixos do cenário
+let decorations = [];
+
+function generateDecorations() {
+  decorations = [];
+
+  for (let i = 0; i < 40; i++) {
+    decorations.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      type: Math.random() > 0.8 ? "palm" : "rock"
+    });
+  }
+}
+
+generateDecorations();
 
 function resetGame() {
   player = {
@@ -103,6 +119,58 @@ canvas.addEventListener("click", () => {
   }
 });
 
+function drawBackground() {
+  // areia base
+  ctx.fillStyle = "#e6d3a3";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // textura leve
+  for (let i = 0; i < canvas.width; i += 4) {
+    for (let j = 0; j < canvas.height; j += 4) {
+      ctx.fillStyle = Math.random() > 0.5 ? "#e6d3a3" : "#dcc690";
+      ctx.fillRect(i, j, 4, 4);
+    }
+  }
+
+  // desenhar elementos
+  for (let d of decorations) {
+
+    // evita desenhar em cima do jogo
+    if (
+      d.x > gameX &&
+      d.x < gameX + gameWidth &&
+      d.y > gameY &&
+      d.y < gameY + gameHeight
+    ) continue;
+
+    if (d.type === "rock") {
+      ctx.fillStyle = "#777";
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (d.type === "palm") {
+      // tronco
+      ctx.fillStyle = "#8b5a2b";
+      ctx.fillRect(d.x, d.y, 2, 10);
+
+      // folhas
+      ctx.strokeStyle = "#2f8f3a";
+      ctx.beginPath();
+      ctx.moveTo(d.x + 1, d.y);
+      ctx.lineTo(d.x - 6, d.y - 4);
+      ctx.moveTo(d.x + 1, d.y);
+      ctx.lineTo(d.x + 6, d.y - 4);
+      ctx.moveTo(d.x + 1, d.y);
+      ctx.lineTo(d.x - 4, d.y - 8);
+      ctx.moveTo(d.x + 1, d.y);
+      ctx.lineTo(d.x + 4, d.y - 8);
+      ctx.stroke();
+    }
+  }
+}
+
 function drawWater() {
   for (let y = 0; y < gameHeight; y += 10) {
     ctx.fillStyle = y % 20 === 0 ? "#2fa4b7" : "#2895a6";
@@ -121,7 +189,7 @@ function drawFish() {
   ctx.arc(player.x, player.y, player.size/2, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = player.isSkeleton ? "#999" : "#ffffff";
+  ctx.fillStyle = player.isSkeleton ? "#999" : "#fff";
   ctx.fillRect(player.x - 6, player.y, 6, 4);
 
   ctx.globalAlpha = 1;
@@ -142,7 +210,7 @@ function drawOil(o) {
 }
 
 function drawStart() {
-  ctx.fillStyle = "white";
+  ctx.fillStyle = "black";
   ctx.textAlign = "center";
 
   ctx.font = "26px monospace";
@@ -156,7 +224,7 @@ function drawStart() {
 }
 
 function drawGameOver() {
-  ctx.fillStyle = "white";
+  ctx.fillStyle = "black";
   ctx.textAlign = "center";
 
   ctx.font = "22px monospace";
@@ -170,6 +238,7 @@ function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   blinkTimer++;
 
+  drawBackground();
   drawWater();
 
   if (state === "start") {
@@ -178,7 +247,6 @@ function update() {
     return;
   }
 
-  // movimento do player só quando existe
   if (player) {
     let targetX = gameX + player.targetLane * laneWidth + laneWidth/2;
     player.x += (targetX - player.x) * 0.2;
@@ -220,26 +288,22 @@ function update() {
   if (state === "dying") {
     deathTimer++;
 
-    if (deathTimer < 40) {
-      player.y += 1.5;
-    } else if (deathTimer < 70) {
-      player.opacity -= 0.03;
-    } else if (deathTimer < 120) {
+    if (deathTimer < 40) player.y += 1.5;
+    else if (deathTimer < 70) player.opacity -= 0.03;
+    else if (deathTimer < 120) {
       if (!player.isSkeleton) {
         player.isSkeleton = true;
         player.y = player.baseY + 20;
         player.opacity = 1;
       }
       player.y -= 0.5;
-    } else {
-      state = "gameOver";
-    }
+    } else state = "gameOver";
   }
 
   drawFish();
 
   if (state === "playing" || state === "dying") {
-    ctx.fillStyle = "white";
+    ctx.fillStyle = "black";
     ctx.fillText("score: " + score, gameX + 10, gameY + 20);
   }
 
