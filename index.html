@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Meu Jogo</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+    }
+
+    #box {
+      width: 80px;
+      height: 80px;
+      background: white;
+      position: absolute;
+      top: 40%;
+      left: 40%;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="box"></div>
+
+<script>
+  const box = document.getElementById("box");
+
+  box.onclick = () => {
+    box.style.left = Math.random() * 90 + "%";
+    box.style.top = Math.random() * 90 + "%";
+  };
+</script>
+
+</body>
+</html>
