@@ -19,22 +19,19 @@
 
 html,
 body {
+  height: 100%;
   margin: 0;
-  min-height: 100%;
+  overflow: hidden;
+  width: 100%;
 }
 
 body {
-  align-items: center;
   background:
     linear-gradient(180deg, rgba(255, 169, 126, 0.82), rgba(73, 192, 188, 0.5) 42%, rgba(19, 62, 91, 0.86)),
     repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 4px, transparent 4px 18px);
   color: #fff8e8;
-  display: flex;
+  display: block;
   font-family: ui-monospace, "SFMono-Regular", "Menlo", "Consolas", monospace;
-  justify-content: center;
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow: hidden;
   padding: 0;
 }
 
@@ -46,15 +43,12 @@ button {
 }
 
 .game-wrap {
-  align-items: center;
-  display: grid;
-  gap: 0;
-  justify-items: center;
-  width: min(100%, 712px);
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 
 .game-stage {
-  aspect-ratio: 89 / 50;
   background: #46b8bd;
   border: 0;
   border-radius: 8px;
@@ -63,10 +57,10 @@ button {
     0 0 0 4px #1f4e67,
     inset 0 0 0 5px #f3f7ff,
     inset 0 0 0 9px rgba(255, 255, 255, 0.22);
-  max-height: min(76dvh, 400px);
+  height: 100%;
   overflow: hidden;
   position: relative;
-  width: min(100%, 712px);
+  width: 100%;
 }
 
 canvas {
@@ -266,11 +260,11 @@ canvas {
 
 @media (max-width: 560px), ((hover: none) and (max-width: 720px)) {
   body {
-    overflow: auto;
+    overflow: hidden;
   }
 
   .game-stage {
-    max-height: 400px;
+    height: 100%;
   }
 
   .lane-controls {
