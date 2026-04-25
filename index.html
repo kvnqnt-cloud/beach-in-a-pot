@@ -2,36 +2,113 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Meu Jogo</title>
+  <title>Praia no Pote</title>
   <style>
     body {
       margin: 0;
       background: black;
       overflow: hidden;
+      color: white;
+      font-family: monospace;
     }
 
-    #box {
-      width: 80px;
-      height: 80px;
-      background: white;
-      position: absolute;
-      top: 40%;
-      left: 40%;
-      cursor: pointer;
+    canvas {
+      display: block;
+      margin: auto;
+      background: #111;
+    }
+
+    #score {
+      position: fixed;
+      top: 10px;
+      left: 10px;
     }
   </style>
 </head>
 <body>
 
-<div id="box"></div>
+<div id="score">Score: 0</div>
+<canvas id="gameCanvas" width="300" height="500"></canvas>
 
 <script>
-  const box = document.getElementById("box");
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-  box.onclick = () => {
-    box.style.left = Math.random() * 90 + "%";
-    box.style.top = Math.random() * 90 + "%";
-  };
+const laneWidth = canvas.width / 3;
+
+let player = {
+  lane: 1,
+  y: 400,
+  size: 30
+};
+
+let obstacles = [];
+let speed = 2;
+let score = 0;
+let gameOver = false;
+
+function spawnObstacle() {
+  const lane = Math.floor(Math.random() * 3);
+  obstacles.push({
+    lane: lane,
+    y: -50,
+    size: 30
+  });
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft" && player.lane > 0) {
+    player.lane--;
+  }
+  if (e.key === "ArrowRight" && player.lane < 2) {
+    player.lane++;
+  }
+});
+
+function update() {
+  if (gameOver) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  let px = player.lane * laneWidth + laneWidth/2 - player.size/2;
+  ctx.fillStyle = "white";
+  ctx.fillRect(px, player.y, player.size, player.size);
+
+  for (let i = 0; i < obstacles.length; i++) {
+    let o = obstacles[i];
+    let ox = o.lane * laneWidth + laneWidth/2 - o.size/2;
+
+    o.y += speed;
+
+    ctx.fillStyle = "red";
+    ctx.fillRect(ox, o.y, o.size, o.size);
+
+    if (
+      o.lane === player.lane &&
+      o.y + o.size > player.y &&
+      o.y < player.y + player.size
+    ) {
+      gameOver = true;
+      alert("Game Over! Score: " + score);
+      location.reload();
+    }
+  }
+
+  obstacles = obstacles.filter(o => o.y < canvas.height);
+
+  if (Math.random() < 0.02) {
+    spawnObstacle();
+  }
+
+  score++;
+  document.getElementById("score").innerText = "Score: " + score;
+
+  speed += 0.0005;
+
+  requestAnimationFrame(update);
+}
+
+update();
 </script>
 
 </body>
