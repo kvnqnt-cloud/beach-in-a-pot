@@ -27,7 +27,7 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// área do jogo (vertical no centro)
+// área do jogo
 const gameWidth = 220;
 const gameHeight = 360;
 const gameX = (canvas.width - gameWidth) / 2;
@@ -41,6 +41,8 @@ let player, obstacles, speed, score;
 let spawnTimer = 0;
 let spawnInterval = 90;
 let scoreTimer = 0;
+let deathTimer = 0;
+let blinkTimer = 0;
 
 // reset
 function resetGame() {
@@ -58,9 +60,10 @@ function resetGame() {
   spawnTimer = 0;
   spawnInterval = 90;
   scoreTimer = 0;
+  deathTimer = 0;
 }
 
-// padrões (sempre com caminho livre)
+// padrões de obstáculos
 function spawnRow() {
   const patterns = [
     [1,0,1],
@@ -96,7 +99,7 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// clique (start/restart)
+// clique
 canvas.addEventListener("click", () => {
   if (state === "start") {
     resetGame();
@@ -116,7 +119,11 @@ function drawStartScreen() {
   ctx.fillText("PRAIA NO POTE", gameX + gameWidth/2, canvas.height/2 - 20);
 
   ctx.font = "14px monospace";
-  ctx.fillText("clique para começar", gameX + gameWidth/2, canvas.height/2 + 20);
+
+  // texto piscando
+  if (Math.floor(blinkTimer / 30) % 2 === 0) {
+    ctx.fillText("clique para começar", gameX + gameWidth/2, canvas.height/2 + 20);
+  }
 }
 
 function drawGameOver() {
@@ -136,6 +143,8 @@ function drawGameOver() {
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  blinkTimer++;
+
   // fundo
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -150,66 +159,85 @@ function update() {
     return;
   }
 
-  if (state === "playing") {
+  // movimento suave do player
+  let targetX = gameX + player.targetLane * laneWidth + laneWidth/2 - player.size/2;
+  player.x += (targetX - player.x) * 0.2;
 
-    // movimento suave
-    let targetX = gameX + player.targetLane * laneWidth + laneWidth/2 - player.size/2;
-    player.x += (targetX - player.x) * 0.2;
+  // desenhar player
+  ctx.fillStyle = "white";
+  ctx.fillRect(player.x, player.y, player.size, player.size);
 
-    // player
-    ctx.fillStyle = "white";
-    ctx.fillRect(player.x, player.y, player.size, player.size);
+  // obstáculos
+  for (let i = 0; i < obstacles.length; i++) {
+    let o = obstacles[i];
+    let ox = gameX + o.lane * laneWidth + laneWidth/2 - o.size/2;
 
-    // obstáculos
-    for (let i = 0; i < obstacles.length; i++) {
-      let o = obstacles[i];
-      let ox = gameX + o.lane * laneWidth + laneWidth/2 - o.size/2;
-
+    if (state === "playing") {
       o.y += speed;
-
-      ctx.fillStyle = "red";
-      ctx.fillRect(ox, o.y, o.size, o.size);
-
-      // colisão
-      if (
-        o.lane === player.targetLane &&
-        o.y + o.size > player.y &&
-        o.y < player.y + player.size
-      ) {
-        state = "gameOver";
-      }
     }
 
-    // limpar
-    obstacles = obstacles.filter(o => o.y < gameY + gameHeight);
+    ctx.fillStyle = "red";
+    ctx.fillRect(ox, o.y, o.size, o.size);
 
-    // spawn
+    // colisão
+    if (
+      state === "playing" &&
+      o.lane === player.targetLane &&
+      o.y + o.size > player.y &&
+      o.y < player.y + player.size
+    ) {
+      state = "dying";
+      deathTimer = 0;
+    }
+  }
+
+  // limpar fora da tela
+  obstacles = obstacles.filter(o => o.y < gameY + gameHeight);
+
+  // estado PLAYING
+  if (state === "playing") {
+
     spawnTimer++;
     if (spawnTimer > spawnInterval) {
       spawnRow();
       spawnTimer = 0;
     }
 
-    // dificuldade
     if (spawnInterval > 55) {
       spawnInterval -= 0.003;
     }
 
-    // SCORE BEM LENTO
+    // SCORE MUITO LENTO (≈3s por ponto)
     scoreTimer++;
-    if (scoreTimer > 180) { // ~1 ponto por segundo
+    if (scoreTimer > 180) {
       score++;
       scoreTimer = 0;
     }
-
-    ctx.fillStyle = "white";
-    ctx.textAlign = "left";
-    ctx.fillText("score: " + score, gameX + 10, gameY + 20);
 
     // velocidade
     speed += 0.00015;
   }
 
+  // estado DYING
+  if (state === "dying") {
+    deathTimer++;
+
+    // (placeholder de animação — depois você troca por afundar/esqueleto)
+    player.y += 1;
+
+    if (deathTimer > 120) {
+      state = "gameOver";
+    }
+  }
+
+  // UI score (sempre visível durante jogo e morte)
+  if (state === "playing" || state === "dying") {
+    ctx.fillStyle = "white";
+    ctx.textAlign = "left";
+    ctx.fillText("score: " + score, gameX + 10, gameY + 20);
+  }
+
+  // overlay game over (por cima do fundo congelado)
   if (state === "gameOver") {
     drawGameOver();
   }
