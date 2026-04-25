@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Praia no Pote</title>
-  <style>
-    body {
-      margin: 0;
-      background: black;
-      overflow: hidden;
-      font-family: monospace;
-      color: white;
-    }
+<meta charset="UTF-8">
+<title>Praia no Pote</title>
 
-    canvas {
-      display: block;
-      margin: auto;
-      background: #111;
-    }
-  </style>
+<style>
+body {
+  margin: 0;
+  background: black;
+  overflow: hidden;
+  font-family: monospace;
+}
+
+canvas {
+  display: block;
+  margin: auto;
+  background: #0e1a1f;
+}
+</style>
 </head>
-<body>
 
+<body>
 <canvas id="gameCanvas" width="712" height="400"></canvas>
 
 <script>
@@ -31,7 +31,6 @@ const gameWidth = 220;
 const gameHeight = 360;
 const gameX = (canvas.width - gameWidth) / 2;
 const gameY = (canvas.height - gameHeight) / 2;
-
 const laneWidth = gameWidth / 3;
 
 let state = "start";
@@ -47,10 +46,10 @@ function resetGame() {
   player = {
     lane: 1,
     targetLane: 1,
-    x: gameX + laneWidth * 1 + laneWidth/2 - 10,
-    y: gameY + gameHeight - 60,
-    baseY: gameY + gameHeight - 60,
-    size: 20,
+    x: gameX + laneWidth * 1 + laneWidth/2,
+    y: gameY + gameHeight - 50,
+    baseY: gameY + gameHeight - 50,
+    size: 18,
     isSkeleton: false,
     opacity: 1
   };
@@ -77,9 +76,9 @@ function spawnRow() {
   const pattern = patterns[Math.floor(Math.random() * patterns.length)];
 
   for (let lane = 0; lane < 3; lane++) {
-    if (pattern[lane] === 1) {
+    if (pattern[lane]) {
       obstacles.push({
-        lane: lane,
+        lane,
         y: gameY - 30,
         size: 20
       });
@@ -87,7 +86,7 @@ function spawnRow() {
   }
 }
 
-document.addEventListener("keydown", (e) => {
+document.addEventListener("keydown", e => {
   if (state !== "playing") return;
 
   if (e.key === "ArrowLeft" && player.targetLane > 0) player.targetLane--;
@@ -95,23 +94,57 @@ document.addEventListener("keydown", (e) => {
 });
 
 canvas.addEventListener("click", () => {
-  if (state === "start") {
-    resetGame();
-    state = "playing";
-  } else if (state === "gameOver") {
+  if (state === "start" || state === "gameOver") {
     resetGame();
     state = "playing";
   }
 });
 
-function drawStartScreen() {
+function drawWater() {
+  for (let y = 0; y < gameHeight; y += 10) {
+    ctx.fillStyle = y % 20 === 0 ? "#2fa4b7" : "#2895a6";
+    ctx.fillRect(gameX, gameY + y, gameWidth, 10);
+  }
+}
+
+function drawFish() {
+  ctx.globalAlpha = player.opacity;
+
+  ctx.fillStyle = player.isSkeleton ? "#ccc" : "#e6f7ff";
+
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.size/2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = player.isSkeleton ? "#999" : "#ffffff";
+  ctx.fillRect(player.x - 6, player.y, 6, 4);
+
+  ctx.globalAlpha = 1;
+}
+
+function drawOil(o) {
+  let x = gameX + o.lane * laneWidth + laneWidth/2;
+
+  ctx.fillStyle = "#111";
+  ctx.beginPath();
+  ctx.ellipse(x, o.y, 12, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#444";
+  ctx.beginPath();
+  ctx.ellipse(x - 3, o.y - 2, 4, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawStart() {
   ctx.fillStyle = "white";
   ctx.textAlign = "center";
 
-  ctx.font = "28px monospace";
+  ctx.font = "26px monospace";
   ctx.fillText("PRAIA NO POTE", gameX + gameWidth/2, canvas.height/2 - 20);
 
   ctx.font = "14px monospace";
+
   if (Math.floor(blinkTimer / 30) % 2 === 0) {
     ctx.fillText("clique para começar", gameX + gameWidth/2, canvas.height/2 + 20);
   }
@@ -121,48 +154,31 @@ function drawGameOver() {
   ctx.fillStyle = "white";
   ctx.textAlign = "center";
 
-  ctx.font = "24px monospace";
+  ctx.font = "22px monospace";
   ctx.fillText("GAME OVER", gameX + gameWidth/2, canvas.height/2 - 20);
 
   ctx.font = "14px monospace";
   ctx.fillText("score: " + score, gameX + gameWidth/2, canvas.height/2 + 10);
-
-  ctx.fillText("clique para jogar novamente", gameX + gameWidth/2, canvas.height/2 + 40);
 }
 
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   blinkTimer++;
 
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  drawWater();
 
-  ctx.fillStyle = "#111";
-  ctx.fillRect(gameX, gameY, gameWidth, gameHeight);
-
-  if (state === "start") {
-    drawStartScreen();
-    requestAnimationFrame(update);
-    return;
-  }
-
-  let targetX = gameX + player.targetLane * laneWidth + laneWidth/2 - player.size/2;
+  let targetX = gameX + player.targetLane * laneWidth + laneWidth/2;
   player.x += (targetX - player.x) * 0.2;
 
-  // OBSTÁCULOS
   for (let o of obstacles) {
-    let ox = gameX + o.lane * laneWidth + laneWidth/2 - o.size/2;
-
     if (state === "playing") o.y += speed;
-
-    ctx.fillStyle = "red";
-    ctx.fillRect(ox, o.y, o.size, o.size);
+    drawOil(o);
 
     if (
       state === "playing" &&
       o.lane === player.targetLane &&
-      o.y + o.size > player.y &&
-      o.y < player.y + player.size
+      o.y > player.y - 10 &&
+      o.y < player.y + 10
     ) {
       state = "dying";
       deathTimer = 0;
@@ -171,45 +187,12 @@ function update() {
 
   obstacles = obstacles.filter(o => o.y < gameY + gameHeight);
 
-  // PLAYER + MORTE
-  ctx.globalAlpha = player.opacity;
-
-  if (state === "dying") {
-    deathTimer++;
-
-    if (deathTimer < 40) {
-      // afundando
-      player.y += 1.5;
-    } else if (deathTimer < 70) {
-      // desaparecendo
-      player.opacity -= 0.03;
-    } else if (deathTimer < 120) {
-      // volta como esqueleto
-      if (!player.isSkeleton) {
-        player.isSkeleton = true;
-        player.y = player.baseY + 20;
-        player.opacity = 1;
-      }
-      player.y -= 0.5; // sobe
-    } else {
-      state = "gameOver";
-    }
-  }
-
-  // desenhar player
-  ctx.fillStyle = player.isSkeleton ? "#ccc" : "white";
-  ctx.fillRect(player.x, player.y, player.size, player.size);
-
-  ctx.globalAlpha = 1;
-
   if (state === "playing") {
     spawnTimer++;
     if (spawnTimer > spawnInterval) {
       spawnRow();
       spawnTimer = 0;
     }
-
-    if (spawnInterval > 55) spawnInterval -= 0.003;
 
     scoreTimer++;
     if (scoreTimer > 180) {
@@ -220,21 +203,39 @@ function update() {
     speed += 0.00015;
   }
 
+  if (state === "dying") {
+    deathTimer++;
+
+    if (deathTimer < 40) {
+      player.y += 1.5;
+    } else if (deathTimer < 70) {
+      player.opacity -= 0.03;
+    } else if (deathTimer < 120) {
+      if (!player.isSkeleton) {
+        player.isSkeleton = true;
+        player.y = player.baseY + 20;
+        player.opacity = 1;
+      }
+      player.y -= 0.5;
+    } else {
+      state = "gameOver";
+    }
+  }
+
+  drawFish();
+
   if (state === "playing" || state === "dying") {
     ctx.fillStyle = "white";
-    ctx.textAlign = "left";
     ctx.fillText("score: " + score, gameX + 10, gameY + 20);
   }
 
-  if (state === "gameOver") {
-    drawGameOver();
-  }
+  if (state === "start") drawStart();
+  if (state === "gameOver") drawGameOver();
 
   requestAnimationFrame(update);
 }
 
 update();
 </script>
-
 </body>
 </html>
