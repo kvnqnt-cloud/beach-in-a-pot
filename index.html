@@ -136,7 +136,7 @@ function drawGameOver() {
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // fundo geral
+  // fundo
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -190,14 +190,14 @@ function update() {
       spawnTimer = 0;
     }
 
-    // dificuldade mais suave
+    // dificuldade
     if (spawnInterval > 55) {
       spawnInterval -= 0.003;
     }
 
-    // SCORE CONTROLADO
+    // SCORE BEM LENTO
     scoreTimer++;
-    if (scoreTimer > 10) {
+    if (scoreTimer > 60) { // ~1 ponto por segundo
       score++;
       scoreTimer = 0;
     }
@@ -206,7 +206,7 @@ function update() {
     ctx.textAlign = "left";
     ctx.fillText("score: " + score, gameX + 10, gameY + 20);
 
-    // velocidade mais controlada
+    // velocidade
     speed += 0.00015;
   }
 
