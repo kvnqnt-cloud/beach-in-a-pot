@@ -45,6 +45,8 @@ let spawnInterval = 90;
 function resetGame() {
   player = {
     lane: 1,
+    targetLane: 1,
+    x: gameX + laneWidth * 1 + laneWidth/2 - 10,
     y: gameY + gameHeight - 60,
     size: 20
   };
@@ -84,11 +86,11 @@ function spawnRow() {
 document.addEventListener("keydown", (e) => {
   if (state !== "playing") return;
 
-  if (e.key === "ArrowLeft" && player.lane > 0) {
-    player.lane--;
+  if (e.key === "ArrowLeft" && player.targetLane > 0) {
+    player.targetLane--;
   }
-  if (e.key === "ArrowRight" && player.lane < 2) {
-    player.lane++;
+  if (e.key === "ArrowRight" && player.targetLane < 2) {
+    player.targetLane++;
   }
 });
 
@@ -148,10 +150,13 @@ function update() {
 
   if (state === "playing") {
 
-    // player
-    let px = gameX + player.lane * laneWidth + laneWidth/2 - player.size/2;
+    // movimento suave do player
+    let targetX = gameX + player.targetLane * laneWidth + laneWidth/2 - player.size/2;
+    player.x += (targetX - player.x) * 0.2;
+
+    // desenhar player
     ctx.fillStyle = "white";
-    ctx.fillRect(px, player.y, player.size, player.size);
+    ctx.fillRect(player.x, player.y, player.size, player.size);
 
     // obstáculos
     for (let i = 0; i < obstacles.length; i++) {
@@ -165,7 +170,7 @@ function update() {
 
       // colisão
       if (
-        o.lane === player.lane &&
+        o.lane === player.targetLane &&
         o.y + o.size > player.y &&
         o.y < player.y + player.size
       ) {
@@ -183,9 +188,9 @@ function update() {
       spawnTimer = 0;
     }
 
-    // dificuldade progressiva
-    if (spawnInterval > 40) {
-      spawnInterval -= 0.01;
+    // dificuldade progressiva (mais suave)
+    if (spawnInterval > 55) {
+      spawnInterval -= 0.003;
     }
 
     // score
@@ -194,8 +199,8 @@ function update() {
     ctx.textAlign = "left";
     ctx.fillText("score: " + score, gameX + 10, gameY + 20);
 
-    // velocidade
-    speed += 0.0005;
+    // velocidade mais controlada
+    speed += 0.00015;
   }
 
   if (state === "gameOver") {
