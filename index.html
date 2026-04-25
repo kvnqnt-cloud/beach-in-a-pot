@@ -27,7 +27,7 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// área do jogo (vertical dentro do 16:9)
+// área do jogo (vertical no centro)
 const gameWidth = 220;
 const gameHeight = 360;
 const gameX = (canvas.width - gameWidth) / 2;
@@ -40,6 +40,7 @@ let state = "start";
 let player, obstacles, speed, score;
 let spawnTimer = 0;
 let spawnInterval = 90;
+let scoreTimer = 0;
 
 // reset
 function resetGame() {
@@ -56,9 +57,10 @@ function resetGame() {
   score = 0;
   spawnTimer = 0;
   spawnInterval = 90;
+  scoreTimer = 0;
 }
 
-// padrões de obstáculos (sempre com 1 caminho livre)
+// padrões (sempre com caminho livre)
 function spawnRow() {
   const patterns = [
     [1,0,1],
@@ -94,7 +96,7 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// clique (start / restart)
+// clique (start/restart)
 canvas.addEventListener("click", () => {
   if (state === "start") {
     resetGame();
@@ -134,7 +136,7 @@ function drawGameOver() {
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // fundo
+  // fundo geral
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -150,11 +152,11 @@ function update() {
 
   if (state === "playing") {
 
-    // movimento suave do player
+    // movimento suave
     let targetX = gameX + player.targetLane * laneWidth + laneWidth/2 - player.size/2;
     player.x += (targetX - player.x) * 0.2;
 
-    // desenhar player
+    // player
     ctx.fillStyle = "white";
     ctx.fillRect(player.x, player.y, player.size, player.size);
 
@@ -178,23 +180,28 @@ function update() {
       }
     }
 
-    // limpar fora da tela
+    // limpar
     obstacles = obstacles.filter(o => o.y < gameY + gameHeight);
 
-    // spawn controlado
+    // spawn
     spawnTimer++;
     if (spawnTimer > spawnInterval) {
       spawnRow();
       spawnTimer = 0;
     }
 
-    // dificuldade progressiva (mais suave)
+    // dificuldade mais suave
     if (spawnInterval > 55) {
       spawnInterval -= 0.003;
     }
 
-    // score
-    score++;
+    // SCORE CONTROLADO
+    scoreTimer++;
+    if (scoreTimer > 10) {
+      score++;
+      scoreTimer = 0;
+    }
+
     ctx.fillStyle = "white";
     ctx.textAlign = "left";
     ctx.fillText("score: " + score, gameX + 10, gameY + 20);
