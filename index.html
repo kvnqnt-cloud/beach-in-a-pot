@@ -26,41 +26,58 @@ canvas {
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// NOVO TAMANHO (mais presença)
+// =================
+// LAYOUT
+// =================
 const gameWidth = 360;
 const gameHeight = canvas.height;
 const gameX = (canvas.width - gameWidth) / 2;
-const gameY = 0;
-
 const laneWidth = gameWidth / 3;
 
+// =================
+// ESTADO
+// =================
 let state = "start";
 
 let player = null;
 let obstacles = [];
+
 let speed = 2;
 let score = 0;
+
 let spawnTimer = 0;
 let spawnInterval = 90;
+
 let scoreTimer = 0;
 let deathTimer = 0;
 let blinkTimer = 0;
 
-let decorations = [];
+// =================
+// NAVIO
+// =================
+let tankerY = 0;
 
-function generateDecorations() {
-  decorations = [];
+// =================
+// DECORAÇÃO FIXA (praia)
+// =================
+let beachItems = [];
 
-  for (let i = 0; i < 30; i++) {
-    decorations.push({
-      x: Math.random() * canvas.width,
+function generateBeach() {
+  beachItems = [];
+
+  for (let i = 0; i < 15; i++) {
+    beachItems.push({
+      x: canvas.width - 120 + Math.random() * 100,
       y: Math.random() * canvas.height,
-      type: Math.random() > 0.75 ? "palm" : "rock"
+      type: Math.random() > 0.6 ? "palm" : "rock"
     });
   }
 }
-generateDecorations();
+generateBeach();
 
+// =================
+// RESET
+// =================
 function resetGame() {
   player = {
     lane: 1,
@@ -77,11 +94,13 @@ function resetGame() {
   speed = 2;
   score = 0;
   spawnTimer = 0;
-  spawnInterval = 90;
   scoreTimer = 0;
   deathTimer = 0;
 }
 
+// =================
+// SPAWN
+// =================
 function spawnRow() {
   const patterns = [
     [1,0,1],
@@ -98,13 +117,15 @@ function spawnRow() {
     if (pattern[lane]) {
       obstacles.push({
         lane,
-        y: -30,
-        size: 22
+        y: -30
       });
     }
   }
 }
 
+// =================
+// INPUT
+// =================
 document.addEventListener("keydown", e => {
   if (state !== "playing") return;
 
@@ -119,54 +140,74 @@ canvas.addEventListener("click", () => {
   }
 });
 
+// =================
+// DESENHO
+// =================
 function drawBackground() {
+
+  // areia base
   ctx.fillStyle = "#e6d3a3";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // textura leve
-  for (let i = 0; i < canvas.width; i += 6) {
-    for (let j = 0; j < canvas.height; j += 6) {
-      ctx.fillStyle = Math.random() > 0.5 ? "#e6d3a3" : "#dcc690";
-      ctx.fillRect(i, j, 6, 6);
-    }
+  // =================
+  // NAVIO (ESQUERDA)
+  // =================
+  tankerY += 0.3;
+  if (tankerY > canvas.height) tankerY = -220;
+
+  let shipX = 30;
+
+  for (let i = -1; i < 2; i++) {
+    let y = tankerY + i * 220;
+
+    ctx.fillStyle = "#2b2b2b";
+    ctx.fillRect(shipX, y, 80, 180);
+
+    ctx.fillStyle = "#444";
+    ctx.fillRect(shipX + 10, y + 20, 60, 20);
+    ctx.fillRect(shipX + 10, y + 70, 60, 20);
+    ctx.fillRect(shipX + 10, y + 120, 60, 20);
+
+    ctx.fillStyle = "#777";
+    ctx.fillRect(shipX + 25, y + 140, 30, 25);
   }
 
-  // elementos maiores (menos distantes)
-  for (let d of decorations) {
+  // =================
+  // PRAIA (DIREITA)
+  // =================
+  for (let item of beachItems) {
 
-    if (
-      d.x > gameX &&
-      d.x < gameX + gameWidth
-    ) continue;
-
-    if (d.type === "rock") {
+    if (item.type === "rock") {
       ctx.fillStyle = "#777";
       ctx.beginPath();
-      ctx.arc(d.x, d.y, 5, 0, Math.PI * 2);
+      ctx.arc(item.x, item.y, 10, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    if (d.type === "palm") {
+    if (item.type === "palm") {
       ctx.fillStyle = "#8b5a2b";
-      ctx.fillRect(d.x, d.y, 3, 14);
+      ctx.fillRect(item.x, item.y, 5, 22);
 
       ctx.strokeStyle = "#2f8f3a";
       ctx.lineWidth = 2;
 
       ctx.beginPath();
-      ctx.moveTo(d.x + 1, d.y);
-      ctx.lineTo(d.x - 8, d.y - 6);
-      ctx.moveTo(d.x + 1, d.y);
-      ctx.lineTo(d.x + 8, d.y - 6);
-      ctx.moveTo(d.x + 1, d.y);
-      ctx.lineTo(d.x - 5, d.y - 10);
-      ctx.moveTo(d.x + 1, d.y);
-      ctx.lineTo(d.x + 5, d.y - 10);
+      ctx.moveTo(item.x + 2, item.y);
+      ctx.lineTo(item.x - 12, item.y - 10);
+      ctx.moveTo(item.x + 2, item.y);
+      ctx.lineTo(item.x + 12, item.y - 10);
+      ctx.moveTo(item.x + 2, item.y);
+      ctx.lineTo(item.x - 8, item.y - 16);
+      ctx.moveTo(item.x + 2, item.y);
+      ctx.lineTo(item.x + 8, item.y - 16);
       ctx.stroke();
     }
   }
 }
 
+// =================
+// ÁGUA
+// =================
 function drawWater() {
   for (let y = 0; y < gameHeight; y += 12) {
     ctx.fillStyle = y % 24 === 0 ? "#2fa4b7" : "#2895a6";
@@ -174,6 +215,9 @@ function drawWater() {
   }
 }
 
+// =================
+// PEIXE
+// =================
 function drawFish() {
   if (!player) return;
 
@@ -191,6 +235,9 @@ function drawFish() {
   ctx.globalAlpha = 1;
 }
 
+// =================
+// ÓLEO
+// =================
 function drawOil(o) {
   let x = gameX + o.lane * laneWidth + laneWidth/2;
 
@@ -205,6 +252,9 @@ function drawOil(o) {
   ctx.fill();
 }
 
+// =================
+// UI
+// =================
 function drawStart() {
   ctx.fillStyle = "black";
   ctx.textAlign = "center";
@@ -230,6 +280,9 @@ function drawGameOver() {
   ctx.fillText("score: " + score, canvas.width/2, canvas.height/2 + 10);
 }
 
+// =================
+// LOOP
+// =================
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   blinkTimer++;
