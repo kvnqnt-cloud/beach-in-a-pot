@@ -35,7 +35,10 @@ const laneWidth = gameWidth / 3;
 
 let state = "start";
 
-let player, obstacles, speed, score;
+let player = null;
+let obstacles = [];
+let speed = 2;
+let score = 0;
 let spawnTimer = 0;
 let spawnInterval = 90;
 let scoreTimer = 0;
@@ -108,6 +111,8 @@ function drawWater() {
 }
 
 function drawFish() {
+  if (!player) return;
+
   ctx.globalAlpha = player.opacity;
 
   ctx.fillStyle = player.isSkeleton ? "#ccc" : "#e6f7ff";
@@ -167,8 +172,17 @@ function update() {
 
   drawWater();
 
-  let targetX = gameX + player.targetLane * laneWidth + laneWidth/2;
-  player.x += (targetX - player.x) * 0.2;
+  if (state === "start") {
+    drawStart();
+    requestAnimationFrame(update);
+    return;
+  }
+
+  // movimento do player só quando existe
+  if (player) {
+    let targetX = gameX + player.targetLane * laneWidth + laneWidth/2;
+    player.x += (targetX - player.x) * 0.2;
+  }
 
   for (let o of obstacles) {
     if (state === "playing") o.y += speed;
@@ -229,7 +243,6 @@ function update() {
     ctx.fillText("score: " + score, gameX + 10, gameY + 20);
   }
 
-  if (state === "start") drawStart();
   if (state === "gameOver") drawGameOver();
 
   requestAnimationFrame(update);
