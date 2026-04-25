@@ -28,8 +28,8 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 // área do jogo (vertical dentro do 16:9)
-const gameWidth = 300;
-const gameHeight = 500;
+const gameWidth = 220;
+const gameHeight = 360;
 const gameX = (canvas.width - gameWidth) / 2;
 const gameY = (canvas.height - gameHeight) / 2;
 
@@ -38,120 +38,26 @@ const laneWidth = gameWidth / 3;
 let state = "start";
 
 let player, obstacles, speed, score;
+let spawnTimer = 0;
+let spawnInterval = 90;
 
+// reset
 function resetGame() {
   player = {
     lane: 1,
-    y: gameY + gameHeight - 80,
-    size: 30
+    y: gameY + gameHeight - 60,
+    size: 20
   };
 
   obstacles = [];
   speed = 2;
   score = 0;
+  spawnTimer = 0;
+  spawnInterval = 90;
 }
 
-function spawnObstacle() {
-  const lane = Math.floor(Math.random() * 3);
-  obstacles.push({
-    lane: lane,
-    y: gameY - 50,
-    size: 30
-  });
-}
-
-document.addEventListener("keydown", (e) => {
-  if (state !== "playing") return;
-
-  if (e.key === "ArrowLeft" && player.lane > 0) {
-    player.lane--;
-  }
-  if (e.key === "ArrowRight" && player.lane < 2) {
-    player.lane++;
-  }
-});
-
-canvas.addEventListener("click", () => {
-  if (state === "start") {
-    resetGame();
-    state = "playing";
-  } else if (state === "gameOver") {
-    resetGame();
-    state = "playing";
-  }
-});
-
-function drawStartScreen() {
-  ctx.fillStyle = "white";
-  ctx.textAlign = "center";
-
-  ctx.font = "40px monospace";
-  ctx.fillText("PRAIA NO POTE", canvas.width / 2, canvas.height / 2 - 40);
-
-  ctx.font = "20px monospace";
-  ctx.fillText("clique para começar", canvas.width / 2, canvas.height / 2 + 20);
-}
-
-function drawGameOver() {
-  ctx.fillStyle = "white";
-  ctx.textAlign = "center";
-
-  ctx.font = "30px monospace";
-  ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 20);
-
-  ctx.font = "20px monospace";
-  ctx.fillText("score: " + score, canvas.width / 2, canvas.height / 2 + 20);
-
-  ctx.fillText("clique para jogar novamente", canvas.width / 2, canvas.height / 2 + 60);
-}
-
-function update() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // fundo geral (16:9)
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // área do jogo (centro)
-  ctx.fillStyle = "#111";
-  ctx.fillRect(gameX, gameY, gameWidth, gameHeight);
-
-  if (state === "start") {
-    drawStartScreen();
-    requestAnimationFrame(update);
-    return;
-  }
-
-  if (state === "playing") {
-    let px = gameX + player.lane * laneWidth + laneWidth/2 - player.size/2;
-    ctx.fillStyle = "white";
-    ctx.fillRect(px, player.y, player.size, player.size);
-
-    for (let i = 0; i < obstacles.length; i++) {
-      let o = obstacles[i];
-      let ox = gameX + o.lane * laneWidth + laneWidth/2 - o.size/2;
-
-      o.y += speed;
-
-      ctx.fillStyle = "red";
-      ctx.fillRect(ox, o.y, o.size, o.size);
-
-      if (
-        o.lane === player.lane &&
-        o.y + o.size > player.y &&
-        o.y < player.y + player.size
-      ) {
-        state = "gameOver";
-      }
-    }
-
-    obstacles = obstacles.filter(o => o.y < gameY + gameHeight);
-
-let spawnTimer = 0;
-let spawnInterval = 90; // quanto maior = mais espaço
-
+// padrões de obstáculos (sempre com 1 caminho livre)
 function spawnRow() {
-  // padrões possíveis (sempre com caminho livre)
   const patterns = [
     [1,0,1],
     [0,1,0],
@@ -167,19 +73,129 @@ function spawnRow() {
     if (pattern[lane] === 1) {
       obstacles.push({
         lane: lane,
-        y: gameY - 50,
-        size: 30
+        y: gameY - 30,
+        size: 20
       });
     }
   }
 }
 
-    score++;
-    speed += 0.0005;
+// controle
+document.addEventListener("keydown", (e) => {
+  if (state !== "playing") return;
 
+  if (e.key === "ArrowLeft" && player.lane > 0) {
+    player.lane--;
+  }
+  if (e.key === "ArrowRight" && player.lane < 2) {
+    player.lane++;
+  }
+});
+
+// clique (start / restart)
+canvas.addEventListener("click", () => {
+  if (state === "start") {
+    resetGame();
+    state = "playing";
+  } else if (state === "gameOver") {
+    resetGame();
+    state = "playing";
+  }
+});
+
+// telas
+function drawStartScreen() {
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+
+  ctx.font = "28px monospace";
+  ctx.fillText("PRAIA NO POTE", gameX + gameWidth/2, canvas.height/2 - 20);
+
+  ctx.font = "14px monospace";
+  ctx.fillText("clique para começar", gameX + gameWidth/2, canvas.height/2 + 20);
+}
+
+function drawGameOver() {
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+
+  ctx.font = "24px monospace";
+  ctx.fillText("GAME OVER", gameX + gameWidth/2, canvas.height/2 - 20);
+
+  ctx.font = "14px monospace";
+  ctx.fillText("score: " + score, gameX + gameWidth/2, canvas.height/2 + 10);
+
+  ctx.fillText("clique para jogar novamente", gameX + gameWidth/2, canvas.height/2 + 40);
+}
+
+// loop principal
+function update() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // fundo
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // área do jogo
+  ctx.fillStyle = "#111";
+  ctx.fillRect(gameX, gameY, gameWidth, gameHeight);
+
+  if (state === "start") {
+    drawStartScreen();
+    requestAnimationFrame(update);
+    return;
+  }
+
+  if (state === "playing") {
+
+    // player
+    let px = gameX + player.lane * laneWidth + laneWidth/2 - player.size/2;
+    ctx.fillStyle = "white";
+    ctx.fillRect(px, player.y, player.size, player.size);
+
+    // obstáculos
+    for (let i = 0; i < obstacles.length; i++) {
+      let o = obstacles[i];
+      let ox = gameX + o.lane * laneWidth + laneWidth/2 - o.size/2;
+
+      o.y += speed;
+
+      ctx.fillStyle = "red";
+      ctx.fillRect(ox, o.y, o.size, o.size);
+
+      // colisão
+      if (
+        o.lane === player.lane &&
+        o.y + o.size > player.y &&
+        o.y < player.y + player.size
+      ) {
+        state = "gameOver";
+      }
+    }
+
+    // limpar fora da tela
+    obstacles = obstacles.filter(o => o.y < gameY + gameHeight);
+
+    // spawn controlado
+    spawnTimer++;
+    if (spawnTimer > spawnInterval) {
+      spawnRow();
+      spawnTimer = 0;
+    }
+
+    // dificuldade progressiva
+    if (spawnInterval > 40) {
+      spawnInterval -= 0.01;
+    }
+
+    // score
+    score++;
     ctx.fillStyle = "white";
     ctx.textAlign = "left";
     ctx.fillText("score: " + score, gameX + 10, gameY + 20);
+
+    // velocidade
+    speed += 0.0005;
   }
 
   if (state === "gameOver") {
