@@ -35,6 +35,12 @@ const gameX = (canvas.width - gameWidth) / 2;
 const laneWidth = gameWidth / 3;
 
 // =================
+// IMAGENS
+// =================
+const fishImg = new Image();
+fishImg.src = "fish.png";
+
+// =================
 // ESTADO
 // =================
 let state = "start";
@@ -58,7 +64,7 @@ let blinkTimer = 0;
 let tankerY = 0;
 
 // =================
-// DECORAÇÃO FIXA (praia)
+// PRAIA
 // =================
 let beachItems = [];
 
@@ -85,7 +91,7 @@ function resetGame() {
     x: gameX + laneWidth * 1 + laneWidth/2,
     y: canvas.height - 60,
     baseY: canvas.height - 60,
-    size: 22,
+    size: 64,
     isSkeleton: false,
     opacity: 1
   };
@@ -117,7 +123,7 @@ function spawnRow() {
     if (pattern[lane]) {
       obstacles.push({
         lane,
-        y: -30
+        y: -40
       });
     }
   }
@@ -141,17 +147,14 @@ canvas.addEventListener("click", () => {
 });
 
 // =================
-// DESENHO
+// BACKGROUND
 // =================
 function drawBackground() {
 
-  // areia base
   ctx.fillStyle = "#e6d3a3";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // =================
-  // NAVIO (ESQUERDA)
-  // =================
+  // NAVIO
   tankerY += 0.3;
   if (tankerY > canvas.height) tankerY = -220;
 
@@ -172,9 +175,7 @@ function drawBackground() {
     ctx.fillRect(shipX + 25, y + 140, 30, 25);
   }
 
-  // =================
-  // PRAIA (DIREITA)
-  // =================
+  // PRAIA
   for (let item of beachItems) {
 
     if (item.type === "rock") {
@@ -216,39 +217,33 @@ function drawWater() {
 }
 
 // =================
-// PEIXE
+// PEIXE (SPRITE)
 // =================
 function drawFish() {
   if (!player) return;
 
   ctx.globalAlpha = player.opacity;
 
-  ctx.fillStyle = player.isSkeleton ? "#ccc" : "#e6f7ff";
-
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.size/2, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = player.isSkeleton ? "#999" : "#fff";
-  ctx.fillRect(player.x - 7, player.y, 7, 5);
+  ctx.drawImage(
+    fishImg,
+    player.x - 32,
+    player.y - 32,
+    64,
+    64
+  );
 
   ctx.globalAlpha = 1;
 }
 
 // =================
-// ÓLEO
+// ÓLEO (placeholder)
 // =================
 function drawOil(o) {
   let x = gameX + o.lane * laneWidth + laneWidth/2;
 
   ctx.fillStyle = "#111";
   ctx.beginPath();
-  ctx.ellipse(x, o.y, 16, 10, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#444";
-  ctx.beginPath();
-  ctx.ellipse(x - 4, o.y - 2, 6, 3, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, o.y, 18, 12, 0, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -308,8 +303,8 @@ function update() {
     if (
       state === "playing" &&
       o.lane === player.targetLane &&
-      o.y > player.y - 10 &&
-      o.y < player.y + 10
+      o.y > player.y - 20 &&
+      o.y < player.y + 20
     ) {
       state = "dying";
       deathTimer = 0;
@@ -340,11 +335,6 @@ function update() {
     if (deathTimer < 40) player.y += 2;
     else if (deathTimer < 70) player.opacity -= 0.03;
     else if (deathTimer < 120) {
-      if (!player.isSkeleton) {
-        player.isSkeleton = true;
-        player.y = player.baseY + 20;
-        player.opacity = 1;
-      }
       player.y -= 0.6;
     } else state = "gameOver";
   }
