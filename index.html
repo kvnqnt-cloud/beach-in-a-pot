@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Praia no Pote</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="game-wrap">
+      <section class="game-stage" aria-label="Praia no Pote">
+        <canvas id="gameCanvas" width="712" height="400"></canvas>
+
+        <div class="glass-shine" aria-hidden="true"></div>
+
+        <div class="hud">
+          <div class="hud-tile">
+            <span>MARÉ</span>
+            <strong id="scoreText">0000</strong>
+          </div>
+          <div class="hud-tile hud-clean">
+            <span>LIMPO</span>
+            <strong id="cleanText">◆ ◆ ◆</strong>
+          </div>
+          <div class="hud-tile">
+            <span>RECORDE</span>
+            <strong id="bestText">0000</strong>
+          </div>
+        </div>
+
+        <button class="icon-button sound-button" id="soundButton" type="button" aria-label="Alternar som">
+          <span id="soundIcon" aria-hidden="true">♪</span>
+        </button>
+
+        <button class="icon-button pause-button" id="pauseButton" type="button" aria-label="Pausar">
+          <span aria-hidden="true">Ⅱ</span>
+        </button>
+
+        <div class="overlay overlay-menu is-visible" id="menuOverlay">
+          <img class="logo" src="assets/logo.svg" alt="Praia no Pote" />
+          <button class="primary-button" id="startButton" type="button">Jogar</button>
+          <p class="menu-record">Recorde <strong id="menuBestText">0000</strong></p>
+        </div>
+
+        <div class="overlay overlay-pause" id="pauseOverlay">
+          <h1>Pausa</h1>
+          <button class="primary-button" id="resumeButton" type="button">Voltar</button>
+        </div>
+
+        <div class="overlay overlay-over" id="gameOverOverlay">
+          <h1>Fim da maré</h1>
+          <p id="finalScoreText">0000</p>
+          <button class="primary-button" id="restartButton" type="button">Recomeçar</button>
+        </div>
+      </section>
+
+      <nav class="lane-controls" aria-label="Controles">
+        <button id="leftButton" type="button" aria-label="Mover para a esquerda">←</button>
+        <button id="rightButton" type="button" aria-label="Mover para a direita">→</button>
+      </nav>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>
