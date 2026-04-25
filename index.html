@@ -26,10 +26,12 @@ canvas {
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const gameWidth = 220;
-const gameHeight = 360;
+// NOVO TAMANHO (mais presença)
+const gameWidth = 360;
+const gameHeight = canvas.height;
 const gameX = (canvas.width - gameWidth) / 2;
-const gameY = (canvas.height - gameHeight) / 2;
+const gameY = 0;
+
 const laneWidth = gameWidth / 3;
 
 let state = "start";
@@ -44,21 +46,19 @@ let scoreTimer = 0;
 let deathTimer = 0;
 let blinkTimer = 0;
 
-// elementos fixos do cenário
 let decorations = [];
 
 function generateDecorations() {
   decorations = [];
 
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 30; i++) {
     decorations.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      type: Math.random() > 0.8 ? "palm" : "rock"
+      type: Math.random() > 0.75 ? "palm" : "rock"
     });
   }
 }
-
 generateDecorations();
 
 function resetGame() {
@@ -66,9 +66,9 @@ function resetGame() {
     lane: 1,
     targetLane: 1,
     x: gameX + laneWidth * 1 + laneWidth/2,
-    y: gameY + gameHeight - 50,
-    baseY: gameY + gameHeight - 50,
-    size: 18,
+    y: canvas.height - 60,
+    baseY: canvas.height - 60,
+    size: 22,
     isSkeleton: false,
     opacity: 1
   };
@@ -98,8 +98,8 @@ function spawnRow() {
     if (pattern[lane]) {
       obstacles.push({
         lane,
-        y: gameY - 30,
-        size: 20
+        y: -30,
+        size: 22
       });
     }
   }
@@ -120,61 +120,57 @@ canvas.addEventListener("click", () => {
 });
 
 function drawBackground() {
-  // areia base
   ctx.fillStyle = "#e6d3a3";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // textura leve
-  for (let i = 0; i < canvas.width; i += 4) {
-    for (let j = 0; j < canvas.height; j += 4) {
+  for (let i = 0; i < canvas.width; i += 6) {
+    for (let j = 0; j < canvas.height; j += 6) {
       ctx.fillStyle = Math.random() > 0.5 ? "#e6d3a3" : "#dcc690";
-      ctx.fillRect(i, j, 4, 4);
+      ctx.fillRect(i, j, 6, 6);
     }
   }
 
-  // desenhar elementos
+  // elementos maiores (menos distantes)
   for (let d of decorations) {
 
-    // evita desenhar em cima do jogo
     if (
       d.x > gameX &&
-      d.x < gameX + gameWidth &&
-      d.y > gameY &&
-      d.y < gameY + gameHeight
+      d.x < gameX + gameWidth
     ) continue;
 
     if (d.type === "rock") {
       ctx.fillStyle = "#777";
       ctx.beginPath();
-      ctx.arc(d.x, d.y, 3, 0, Math.PI * 2);
+      ctx.arc(d.x, d.y, 5, 0, Math.PI * 2);
       ctx.fill();
     }
 
     if (d.type === "palm") {
-      // tronco
       ctx.fillStyle = "#8b5a2b";
-      ctx.fillRect(d.x, d.y, 2, 10);
+      ctx.fillRect(d.x, d.y, 3, 14);
 
-      // folhas
       ctx.strokeStyle = "#2f8f3a";
+      ctx.lineWidth = 2;
+
       ctx.beginPath();
       ctx.moveTo(d.x + 1, d.y);
-      ctx.lineTo(d.x - 6, d.y - 4);
+      ctx.lineTo(d.x - 8, d.y - 6);
       ctx.moveTo(d.x + 1, d.y);
-      ctx.lineTo(d.x + 6, d.y - 4);
+      ctx.lineTo(d.x + 8, d.y - 6);
       ctx.moveTo(d.x + 1, d.y);
-      ctx.lineTo(d.x - 4, d.y - 8);
+      ctx.lineTo(d.x - 5, d.y - 10);
       ctx.moveTo(d.x + 1, d.y);
-      ctx.lineTo(d.x + 4, d.y - 8);
+      ctx.lineTo(d.x + 5, d.y - 10);
       ctx.stroke();
     }
   }
 }
 
 function drawWater() {
-  for (let y = 0; y < gameHeight; y += 10) {
-    ctx.fillStyle = y % 20 === 0 ? "#2fa4b7" : "#2895a6";
-    ctx.fillRect(gameX, gameY + y, gameWidth, 10);
+  for (let y = 0; y < gameHeight; y += 12) {
+    ctx.fillStyle = y % 24 === 0 ? "#2fa4b7" : "#2895a6";
+    ctx.fillRect(gameX, y, gameWidth, 12);
   }
 }
 
@@ -190,7 +186,7 @@ function drawFish() {
   ctx.fill();
 
   ctx.fillStyle = player.isSkeleton ? "#999" : "#fff";
-  ctx.fillRect(player.x - 6, player.y, 6, 4);
+  ctx.fillRect(player.x - 7, player.y, 7, 5);
 
   ctx.globalAlpha = 1;
 }
@@ -200,12 +196,12 @@ function drawOil(o) {
 
   ctx.fillStyle = "#111";
   ctx.beginPath();
-  ctx.ellipse(x, o.y, 12, 8, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, o.y, 16, 10, 0, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = "#444";
   ctx.beginPath();
-  ctx.ellipse(x - 3, o.y - 2, 4, 2, 0, 0, Math.PI * 2);
+  ctx.ellipse(x - 4, o.y - 2, 6, 3, 0, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -213,13 +209,13 @@ function drawStart() {
   ctx.fillStyle = "black";
   ctx.textAlign = "center";
 
-  ctx.font = "26px monospace";
-  ctx.fillText("PRAIA NO POTE", gameX + gameWidth/2, canvas.height/2 - 20);
+  ctx.font = "28px monospace";
+  ctx.fillText("PRAIA NO POTE", canvas.width/2, canvas.height/2 - 20);
 
-  ctx.font = "14px monospace";
+  ctx.font = "16px monospace";
 
   if (Math.floor(blinkTimer / 30) % 2 === 0) {
-    ctx.fillText("clique para começar", gameX + gameWidth/2, canvas.height/2 + 20);
+    ctx.fillText("clique para começar", canvas.width/2, canvas.height/2 + 20);
   }
 }
 
@@ -227,11 +223,11 @@ function drawGameOver() {
   ctx.fillStyle = "black";
   ctx.textAlign = "center";
 
-  ctx.font = "22px monospace";
-  ctx.fillText("GAME OVER", gameX + gameWidth/2, canvas.height/2 - 20);
+  ctx.font = "26px monospace";
+  ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2 - 20);
 
-  ctx.font = "14px monospace";
-  ctx.fillText("score: " + score, gameX + gameWidth/2, canvas.height/2 + 10);
+  ctx.font = "16px monospace";
+  ctx.fillText("score: " + score, canvas.width/2, canvas.height/2 + 10);
 }
 
 function update() {
@@ -267,7 +263,7 @@ function update() {
     }
   }
 
-  obstacles = obstacles.filter(o => o.y < gameY + gameHeight);
+  obstacles = obstacles.filter(o => o.y < canvas.height);
 
   if (state === "playing") {
     spawnTimer++;
@@ -288,7 +284,7 @@ function update() {
   if (state === "dying") {
     deathTimer++;
 
-    if (deathTimer < 40) player.y += 1.5;
+    if (deathTimer < 40) player.y += 2;
     else if (deathTimer < 70) player.opacity -= 0.03;
     else if (deathTimer < 120) {
       if (!player.isSkeleton) {
@@ -296,7 +292,7 @@ function update() {
         player.y = player.baseY + 20;
         player.opacity = 1;
       }
-      player.y -= 0.5;
+      player.y -= 0.6;
     } else state = "gameOver";
   }
 
@@ -304,7 +300,7 @@ function update() {
 
   if (state === "playing" || state === "dying") {
     ctx.fillStyle = "black";
-    ctx.fillText("score: " + score, gameX + 10, gameY + 20);
+    ctx.fillText("score: " + score, gameX + 10, 20);
   }
 
   if (state === "gameOver") drawGameOver();
