@@ -147,9 +147,32 @@ function update() {
 
     obstacles = obstacles.filter(o => o.y < gameY + gameHeight);
 
-    if (Math.random() < 0.02) {
-      spawnObstacle();
+let spawnTimer = 0;
+let spawnInterval = 90; // quanto maior = mais espaço
+
+function spawnRow() {
+  // padrões possíveis (sempre com caminho livre)
+  const patterns = [
+    [1,0,1],
+    [0,1,0],
+    [1,0,0],
+    [0,0,1],
+    [0,1,1],
+    [1,1,0]
+  ];
+
+  const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+
+  for (let lane = 0; lane < 3; lane++) {
+    if (pattern[lane] === 1) {
+      obstacles.push({
+        lane: lane,
+        y: gameY - 50,
+        size: 30
+      });
     }
+  }
+}
 
     score++;
     speed += 0.0005;
