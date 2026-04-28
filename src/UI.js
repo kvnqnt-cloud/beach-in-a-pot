@@ -19,23 +19,31 @@ export function makeHitButton(x, y, width, height, onClick) {
   button.eventMode = "static";
   button.cursor = "pointer";
 
+  // 🔹 Área clicável invisível
   const hit = new PIXI.Graphics();
   hit.beginFill(0xffffff, 0.001);
   hit.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hit.endFill();
 
-  button.addChild(hit);
+  // 🔥 Overlay para efeito de hover (escurecer)
+  const hoverOverlay = new PIXI.Graphics();
+  hoverOverlay.beginFill(0x000000, 0.2); // 20% preto ≈ efeito de 80% opacity
+  hoverOverlay.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
+  hoverOverlay.endFill();
+  hoverOverlay.alpha = 0; // começa invisível
+
+  button.addChild(hit, hoverOverlay);
 
   // ✅ CLICK
   button.on("pointertap", onClick);
 
-  // 🔥 NOVO HOVER (opacity)
+  // 🔥 HOVER SUAVE (fade)
   button.on("pointerover", () => {
-    button.alpha = 0.8;
+    hoverOverlay.alpha = 1;
   });
 
   button.on("pointerout", () => {
-    button.alpha = 1;
+    hoverOverlay.alpha = 0;
   });
 
   return button;
