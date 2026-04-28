@@ -74,12 +74,16 @@ export class Game {
       this.textures[key] = await PIXI.Assets.load(src);
     }
 
-    this.textures.titleInterface = await makeCleanTexture(ASSETS.titleInterface, bottomUiRects);
+    // ✅ CORREÇÃO AQUI — NÃO limpar a imagem da UI
+    this.textures.titleInterface = await PIXI.Assets.load(ASSETS.titleInterface);
+
+    // mantém os outros como estavam
     this.textures.gameplayInterface = await makeCleanTexture(ASSETS.gameplayInterface, [
       { x: 120, y: 108, w: 260, h: 78 },
       { x: 120, y: 268, w: 260, h: 78 },
       ...bottomUiRects
     ]);
+
     this.textures.gameOverInterface = await makeCleanTexture(ASSETS.gameOverInterface, [
       { x: 690, y: 365, w: 560, h: 145 },
       ...bottomUiRects
