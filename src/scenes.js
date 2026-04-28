@@ -33,12 +33,27 @@ export class MenuScene extends BaseScene {
     super(game);
     this.bg = fullSprite(game.textures.titleBg);
     this.ui = fullSprite(game.textures.titleInterface);
+
     this.startHit = makeHitButton(960, 827, 330, 72, async () => {
       await this.game.audio.unlock();
       this.game.startRun();
     });
+
+    // 🔥 HOVER EFFECT (opacity)
+    this.startHit.eventMode = "static";
+    this.startHit.cursor = "pointer";
+
+    this.startHit.on("pointerover", () => {
+      this.startHit.alpha = 0.8;
+    });
+
+    this.startHit.on("pointerout", () => {
+      this.startHit.alpha = 1;
+    });
+
     this.soundToggle = makeSoundToggle(this.game.audio);
     this.hint = makeControlsHint();
+
     this.container.addChild(this.bg, this.ui, this.startHit, this.soundToggle, this.hint);
   }
 
@@ -68,7 +83,17 @@ export class GameplayScene extends BaseScene {
     this.soundToggle = makeSoundToggle(this.game.audio);
     this.hint = makeControlsHint();
 
-    this.container.addChild(this.bg, this.bg2, this.oilContainer, this.particles.container, this.player.container, this.interface, this.hud.container, this.soundToggle, this.hint);
+    this.container.addChild(
+      this.bg,
+      this.bg2,
+      this.oilContainer,
+      this.particles.container,
+      this.player.container,
+      this.interface,
+      this.hud.container,
+      this.soundToggle,
+      this.hint
+    );
 
     this.score = 0;
     this.spawnTimer = 0.62;
@@ -102,7 +127,8 @@ export class GameplayScene extends BaseScene {
     this.previousInput = input;
 
     this.player.update(activeDt, this.scrollSpeed / 600);
-    if (!this.crashed && Math.random() < activeDt * 8) this.particles.spawnBubbleTrail(this.player.x, this.player.y, 1);
+    if (!this.crashed && Math.random() < activeDt * 8)
+      this.particles.spawnBubbleTrail(this.player.x, this.player.y, 1);
 
     if (!this.crashed && this.spawnTimer <= 0) {
       this.spawnOilWave();
@@ -111,7 +137,8 @@ export class GameplayScene extends BaseScene {
 
     for (const oil of this.oils) {
       oil.update(activeDt, this.scrollSpeed, this.elapsed);
-      if (!this.crashed && oil.collides(this.player.getHitCircles())) this.handleCrash(oil);
+      if (!this.crashed && oil.collides(this.player.getHitCircles()))
+        this.handleCrash(oil);
     }
 
     for (let i = this.oils.length - 1; i >= 0; i -= 1) {
@@ -164,21 +191,47 @@ export class GameOverScene extends BaseScene {
   constructor(game, data) {
     super(game);
     this.bg = fullSprite(game.textures.gameplayBg);
+
     this.dead = new PIXI.Sprite(game.textures.deadFish);
     this.dead.anchor.set(0.5);
     this.dead.position.set(960, 830);
     this.dead.scale.set(0.92);
+
     this.interface = fullSprite(game.textures.gameOverInterface);
+
     this.scoreText = makeText(padScore(data.score || 0), 84, "center");
     this.scoreText.anchor.set(0.5);
     this.scoreText.position.set(960, 430);
+
     this.restartHit = makeHitButton(960, 565, 215, 70, async () => {
       await this.game.audio.unlock();
       this.game.startRun();
     });
+
+    // 🔥 HOVER EFFECT (opacity)
+    this.restartHit.eventMode = "static";
+    this.restartHit.cursor = "pointer";
+
+    this.restartHit.on("pointerover", () => {
+      this.restartHit.alpha = 0.8;
+    });
+
+    this.restartHit.on("pointerout", () => {
+      this.restartHit.alpha = 1;
+    });
+
     this.soundToggle = makeSoundToggle(this.game.audio);
     this.hint = makeControlsHint();
-    this.container.addChild(this.bg, this.dead, this.interface, this.scoreText, this.restartHit, this.soundToggle, this.hint);
+
+    this.container.addChild(
+      this.bg,
+      this.dead,
+      this.interface,
+      this.scoreText,
+      this.restartHit,
+      this.soundToggle,
+      this.hint
+    );
   }
 
   update(dt) {
