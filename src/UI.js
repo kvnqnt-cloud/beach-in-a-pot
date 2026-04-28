@@ -92,55 +92,29 @@ export class Hud {
   }
 }
 
-export function makeSoundToggle(audioManager) {
+export function makeSoundToggle(audioManager, textures) {
   const container = new PIXI.Container();
   container.eventMode = "static";
   container.cursor = "pointer";
   container.position.set(150, 998);
 
-  // ✅ mantém estrutura, mas invisível
-  const patch = new PIXI.Graphics();
-  patch.beginFill(0x050505, 0); // invisível
-  patch.drawRoundedRect(-52, -40, 320, 82, 8);
-  patch.endFill();
+  const sprite = new PIXI.Sprite(textures.soundOn);
+  sprite.anchor.set(0, 0.5);
 
-  const icon = new PIXI.Graphics();
-  const label = makeText("", 38);
-  label.position.set(72, -23);
-
-  function redraw() {
-    icon.clear();
-
-    icon.lineStyle(2, 0xffffff, 0.92);
-    icon.beginFill(0x000000, 0.02);
-    icon.drawCircle(0, 0, 33);
-    icon.endFill();
-
-    icon.lineStyle(4, 0xffffff, 0.94);
-    icon.moveTo(-14, -8);
-    icon.lineTo(-4, -8);
-    icon.lineTo(10, -20);
-    icon.lineTo(10, 20);
-    icon.lineTo(-4, 8);
-    icon.lineTo(-14, 8);
-    icon.closePath();
-
-    if (!audioManager.enabled) {
-      icon.moveTo(-20, -20);
-      icon.lineTo(20, 20);
-    }
-
-    label.text = audioManager.enabled ? "sound on" : "sound off";
+  function update() {
+    sprite.texture = audioManager.enabled
+      ? textures.soundOn
+      : textures.soundOff;
   }
 
-  container.addChild(patch, icon, label);
+  container.addChild(sprite);
 
   container.on("pointertap", async () => {
     await audioManager.toggle();
-    redraw();
+    update();
   });
 
-  redraw();
+  update();
   return container;
 }
 
@@ -148,15 +122,8 @@ export function makeControlsHint() {
   const container = new PIXI.Container();
   container.position.set(1392, 998);
 
-  // ✅ também invisível (seguro)
-  const patch = new PIXI.Graphics();
-  patch.beginFill(0x050505, 0);
-  patch.drawRoundedRect(-18, -42, 420, 84, 8);
-  patch.endFill();
-
   const labelLeft = makeText("use", 38, "left");
   labelLeft.anchor.set(0, 0.5);
-  labelLeft.position.set(0, 0);
 
   const keys = new PIXI.Graphics();
   keys.lineStyle(2, 0xffffff, 0.94);
@@ -175,6 +142,6 @@ export function makeControlsHint() {
   labelRight.anchor.set(0, 0.5);
   labelRight.position.set(198, 0);
 
-  container.addChild(patch, labelLeft, keys, left, right, labelRight);
+  container.addChild(labelLeft, keys, left, right, labelRight);
   return container;
 }
