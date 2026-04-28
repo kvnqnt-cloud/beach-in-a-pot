@@ -4,13 +4,92 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>peixe inteligente</title>
+
     <link rel="stylesheet" href="styles.css" />
+
+    <style>
+      /* 🔥 LOADING SCREEN */
+
+      #loading {
+        position: fixed;
+        inset: 0;
+        background: black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+      }
+
+      .loading-box {
+        width: 420px;
+        text-align: center;
+      }
+
+      .bar {
+        width: 100%;
+        height: 12px;
+        background: #222;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+
+      .fill {
+        width: 0%;
+        height: 100%;
+        background: white;
+        transition: width 0.2s linear;
+      }
+
+      .text {
+        color: white;
+        font-family: monospace;
+        font-size: 18px;
+        opacity: 0.8;
+      }
+    </style>
   </head>
+
   <body>
     <main id="game-root" aria-label="peixe inteligente">
-      <div id="loading">loading</div>
+      
+      <!-- 🔥 LOADING -->
+      <div id="loading">
+        <div class="loading-box">
+          <div class="bar">
+            <div class="fill" id="loading-fill"></div>
+          </div>
+          <div class="text">Loading...</div>
+        </div>
+      </div>
+
     </main>
+
+    <!-- PIXI -->
     <script src="https://cdn.jsdelivr.net/npm/pixi.js@7.4.2/dist/pixi.min.js"></script>
+
+    <!-- 🔥 FAKE LOADING SCRIPT -->
+    <script>
+      const fill = document.querySelector("#loading-fill");
+
+      let progress = 0;
+
+      const fakeLoader = setInterval(() => {
+        progress += Math.random() * 8;
+
+        if (progress > 90) progress = 90;
+
+        fill.style.width = progress + "%";
+      }, 100);
+
+      // deixa global pra usar no main.js
+      window.__finishLoading = () => {
+        clearInterval(fakeLoader);
+        fill.style.width = "100%";
+      };
+    </script>
+
+    <!-- GAME -->
     <script type="module" src="src/main.js"></script>
   </body>
 </html>
