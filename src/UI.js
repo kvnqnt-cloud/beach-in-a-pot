@@ -19,26 +19,23 @@ export function makeHitButton(x, y, width, height, onClick) {
   button.eventMode = "static";
   button.cursor = "pointer";
 
-  // área clicável invisível
   const hit = new PIXI.Graphics();
   hit.beginFill(0xffffff, 0.001);
   hit.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hit.endFill();
 
-  // overlay de hover
   const hoverOverlay = new PIXI.Graphics();
-  hoverOverlay.beginFill(0x000000, 0.4);
+  hoverOverlay.beginFill(0x000000, 0.4); // 👈 controla intensidade aqui
   hoverOverlay.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hoverOverlay.endFill();
   hoverOverlay.alpha = 0;
 
   button.addChild(hit, hoverOverlay);
 
-  // animação
   let start = 0;
   let from = 0;
   let to = 0;
-  const duration = 0.2; // segundos
+  const duration = 0.2;
 
   function easeInOut(t) {
     return t < 0.5
@@ -46,7 +43,7 @@ export function makeHitButton(x, y, width, height, onClick) {
       : 1 - Math.pow(-2 * t + 2, 2) / 2;
   }
 
-  const tickerFn = (ticker) => {
+  const tickerFn = () => {
     if (start === 0) return;
 
     const now = performance.now() / 1000;
@@ -62,7 +59,6 @@ export function makeHitButton(x, y, width, height, onClick) {
 
   PIXI.Ticker.shared.add(tickerFn);
 
-  // eventos
   button.on("pointertap", onClick);
 
   button.on("pointerover", () => {
@@ -148,7 +144,7 @@ export function makeControlsHint() {
 
   const patch = new PIXI.Graphics();
   patch.beginFill(0x050505, 0.72);
-  patch.drawRoundedRect(-18, -42, 420, 84, 8);
+  patch.drawRoundedRect(-18, -42, 460, 84, 8);
   patch.endFill();
 
   const labelLeft = makeText("use", 38, "left");
@@ -157,20 +153,22 @@ export function makeControlsHint() {
 
   const keys = new PIXI.Graphics();
   keys.lineStyle(2, 0xffffff, 0.94);
-  keys.drawRoundedRect(70, -22, 44, 44, 6);
-  keys.drawRoundedRect(130, -22, 44, 44, 6);
+
+  // caixas melhor alinhadas
+  keys.drawRoundedRect(80, -22, 44, 44, 6);
+  keys.drawRoundedRect(140, -22, 44, 44, 6);
 
   const left = makeText("←", 36, "center");
   left.anchor.set(0.5);
-  left.position.set(92, -1);
+  left.position.set(102, 0);
 
   const right = makeText("→", 36, "center");
   right.anchor.set(0.5);
-  right.position.set(152, -1);
+  right.position.set(162, 0);
 
   const labelRight = makeText("to escape oil", 38, "left");
   labelRight.anchor.set(0, 0.5);
-  labelRight.position.set(198, 0);
+  labelRight.position.set(210, 0);
 
   container.addChild(patch, labelLeft, keys, left, right, labelRight);
   return container;
