@@ -1,0 +1,7 @@
+:root { color-scheme: dark; --black: #020202; --white: #f2f2f2; }
+* { box-sizing: border-box; }
+html, body { background: var(--black); height: 100%; margin: 0; overflow: hidden; width: 100%; }
+body { align-items: center; display: flex; font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; justify-content: center; }
+#game-root { background: #000; height: min(100vh, 56.25vw); overflow: hidden; position: relative; width: min(100vw, 177.7778vh); }
+#game-root canvas { display: block; height: 100% !important; image-rendering: auto; outline: none; width: 100% !important; }
+#loading { align-items: center; color: var(--white); display: flex; font-size: 18px; inset: 0; justify-content: center; letter-spacing: 0; position: absolute; text-transform: lowercase; }
