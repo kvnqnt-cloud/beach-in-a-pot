@@ -27,7 +27,7 @@ export function makeHitButton(x, y, width, height, onClick) {
 
   // overlay de hover
   const hoverOverlay = new PIXI.Graphics();
-  hoverOverlay.beginFill(0x000000, 0.2);
+  hoverOverlay.beginFill(0x000000, 0.4);
   hoverOverlay.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hoverOverlay.endFill();
   hoverOverlay.alpha = 0;
