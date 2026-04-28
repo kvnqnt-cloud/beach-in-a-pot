@@ -25,20 +25,20 @@ export function makeHitButton(x, y, width, height, onClick) {
   hit.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hit.endFill();
 
-  // overlay de hover
+  // overlay de hover (escurece)
   const hoverOverlay = new PIXI.Graphics();
-  hoverOverlay.beginFill(0x000000, 0.2); // 👈 ajusta opacidade aqui
+  hoverOverlay.beginFill(0x000000, 0.2);
   hoverOverlay.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hoverOverlay.endFill();
   hoverOverlay.alpha = 0;
 
   button.addChild(hit, hoverOverlay);
 
-  // animação easing real
-  let start = 0;
-  let from = 0;
-  let to = 0;
-  const duration = 0.2;
+  // controle de animação
+  let current = 0;
+  let target = 0;
+  let elapsed = 0;
+  const duration = 0.2; // segundos
 
   function easeInOut(t) {
     return t < 0.5
@@ -46,32 +46,38 @@ export function makeHitButton(x, y, width, height, onClick) {
       : 1 - Math.pow(-2 * t + 2, 2) / 2;
   }
 
-  const tickerFn = () => {
-    if (start === 0) return;
+  const tickerFn = (ticker) => {
+    const dt = ticker.deltaMS / 1000;
 
-    const now = performance.now() / 1000;
-    const t = Math.min((now - start) / duration, 1);
-    const eased = easeInOut(t);
+    if (current !== target) {
+      elapsed += dt;
+      let t = Math.min(elapsed / duration, 1);
+      let eased = easeInOut(t);
 
-    hoverOverlay.alpha = from + (to - from) * eased;
+      current = target === 1 ? eased : 1 - eased;
+      hoverOverlay.alpha = current;
 
-    if (t >= 1) start = 0;
+      if (t >= 1) {
+        current = target;
+        hoverOverlay.alpha = target;
+        elapsed = 0;
+      }
+    }
   };
 
   PIXI.Ticker.shared.add(tickerFn);
 
+  // eventos
   button.on("pointertap", onClick);
 
   button.on("pointerover", () => {
-    from = hoverOverlay.alpha;
-    to = 1;
-    start = performance.now() / 1000;
+    target = 1;
+    elapsed = 0;
   });
 
   button.on("pointerout", () => {
-    from = hoverOverlay.alpha;
-    to = 0;
-    start = performance.now() / 1000;
+    target = 0;
+    elapsed = 0;
   });
 
   return button;
@@ -154,18 +160,16 @@ export function makeControlsHint() {
 
   const keys = new PIXI.Graphics();
   keys.lineStyle(2, 0xffffff, 0.94);
-
-  const keyY = -22;
-  keys.drawRoundedRect(70, keyY, 44, 44, 6);
-  keys.drawRoundedRect(130, keyY, 44, 44, 6);
+  keys.drawRoundedRect(70, -22, 44, 44, 6);
+  keys.drawRoundedRect(130, -22, 44, 44, 6);
 
   const left = makeText("←", 36, "center");
   left.anchor.set(0.5);
-  left.position.set(92, 0);
+  left.position.set(92, -1);
 
   const right = makeText("→", 36, "center");
   right.anchor.set(0.5);
-  right.position.set(152, 0);
+  right.position.set(152, -1);
 
   const labelRight = makeText("to escape oil", 38, "left");
   labelRight.anchor.set(0, 0.5);
