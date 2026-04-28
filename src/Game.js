@@ -31,6 +31,7 @@ const bottomUiRects = [
 export class Game {
   constructor(root) {
     this.root = root;
+
     this.app = new PIXI.Application({
       width: DESIGN_WIDTH,
       height: DESIGN_HEIGHT,
@@ -44,6 +45,7 @@ export class Game {
     this.stage = this.app.stage;
     this.input = { left: 0, right: 0 };
     this.bestScore = Number(localStorage.getItem(STORAGE_KEYS.bestScore) || 0);
+
     this.audio = new AudioManager();
     this.scenes = new SceneManager(this);
     this.textures = {};
@@ -53,6 +55,7 @@ export class Game {
     this.root.appendChild(this.app.view);
 
     this.bindInput();
+
     this.app.ticker.add(() => {
       const dt = Math.min(0.05, this.app.ticker.elapsedMS / 1000);
       this.scenes.update(dt);
@@ -70,26 +73,43 @@ export class Game {
       oil03: ASSETS.oil03
     };
 
+    // carregar assets principais
     for (const [key, src] of Object.entries(aliases)) {
       this.textures[key] = await PIXI.Assets.load(src);
     }
 
-    // ✅ CORREÇÃO AQUI — NÃO limpar a imagem da UI
+    // 🔥 NOVO — carregar botão de som (PNG)
+    this.textures.soundOn = await PIXI.Assets.load("assets/images/sound_on.png");
+    this.textures.soundOff = await PIXI.Assets.load("assets/images/sound_off.png");
+
+    // UI principal (sem limpar)
     this.textures.titleInterface = await PIXI.Assets.load(ASSETS.titleInterface);
 
-    // mantém os outros como estavam
-    this.textures.gameplayInterface = await makeCleanTexture(ASSETS.gameplayInterface, [
-      { x: 120, y: 108, w: 260, h: 78 },
-      { x: 120, y: 268, w: 260, h: 78 },
-      ...bottomUiRects
-    ]);
+    // gameplay UI (mantém limpeza)
+    this.textures.gameplayInterface = await makeCleanTexture(
+      ASSETS.gameplayInterface,
+      [
+        { x: 120, y: 108, w: 260, h: 78 },
+        { x: 120, y: 268, w: 260, h: 78 },
+        ...bottomUiRects
+      ]
+    );
 
-    this.textures.gameOverInterface = await makeCleanTexture(ASSETS.gameOverInterface, [
-      { x: 690, y: 365, w: 560, h: 145 },
-      ...bottomUiRects
-    ]);
+    // game over UI
+    this.textures.gameOverInterface = await makeCleanTexture(
+      ASSETS.gameOverInterface,
+      [
+        { x: 690, y: 365, w: 560, h: 145 },
+        ...bottomUiRects
+      ]
+    );
 
-    this.oilTextures = [this.textures.oil01, this.textures.oil02, this.textures.oil03];
+    this.oilTextures = [
+      this.textures.oil01,
+      this.textures.oil02,
+      this.textures.oil03
+    ];
+
     await this.scenes.set(MenuScene);
   }
 
@@ -99,24 +119,36 @@ export class Game {
         event.preventDefault();
         this.input.left = 1;
       }
+
       if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
         event.preventDefault();
         this.input.right = 1;
       }
-      if (event.key === "Enter" || event.key === " ") event.preventDefault();
+
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+      }
     });
 
     window.addEventListener("keyup", (event) => {
-      if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") this.input.left = 0;
-      if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") this.input.right = 0;
+      if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+        this.input.left = 0;
+      }
+
+      if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+        this.input.right = 0;
+      }
     });
 
     this.app.view.addEventListener("pointerdown", async (event) => {
       await this.audio.unlock();
+
       const rect = this.app.view.getBoundingClientRect();
       const x = event.clientX - rect.left;
+
       this.input.left = x < rect.width * 0.5 ? 1 : 0;
       this.input.right = x >= rect.width * 0.5 ? 1 : 0;
+
       this.app.view.focus();
     });
 
@@ -134,8 +166,16 @@ export class Game {
 
   endRun(score) {
     const finalScore = Math.floor(score);
+
     this.bestScore = Math.max(this.bestScore, finalScore);
-    localStorage.setItem(STORAGE_KEYS.bestScore, String(this.bestScore));
-    this.scenes.set(GameOverScene, { score: finalScore });
+
+    localStorage.setItem(
+      STORAGE_KEYS.bestScore,
+      String(this.bestScore)
+    );
+
+    this.scenes.set(GameOverScene, {
+      score: finalScore
+    });
   }
 }
