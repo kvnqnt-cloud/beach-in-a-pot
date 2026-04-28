@@ -34,23 +34,50 @@ export function makeHitButton(x, y, width, height, onClick) {
 
   button.addChild(hit, hoverOverlay);
 
-  // estado alvo da animação
-  let targetAlpha = 0;
+  // controle de animação
+  let current = 0;
+  let target = 0;
+  let elapsed = 0;
+  const duration = 0.2; // segundos
 
-  // animação suave (ease in/out)
-  PIXI.Ticker.shared.add(() => {
-    hoverOverlay.alpha += (targetAlpha - hoverOverlay.alpha) * 0.2;
-  });
+  function easeInOut(t) {
+    return t < 0.5
+      ? 2 * t * t
+      : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  }
+
+  const tickerFn = (ticker) => {
+    const dt = ticker.deltaMS / 1000;
+
+    if (current !== target) {
+      elapsed += dt;
+      let t = Math.min(elapsed / duration, 1);
+      let eased = easeInOut(t);
+
+      current = target === 1 ? eased : 1 - eased;
+      hoverOverlay.alpha = current;
+
+      if (t >= 1) {
+        current = target;
+        hoverOverlay.alpha = target;
+        elapsed = 0;
+      }
+    }
+  };
+
+  PIXI.Ticker.shared.add(tickerFn);
 
   // eventos
   button.on("pointertap", onClick);
 
   button.on("pointerover", () => {
-    targetAlpha = 1;
+    target = 1;
+    elapsed = 0;
   });
 
   button.on("pointerout", () => {
-    targetAlpha = 0;
+    target = 0;
+    elapsed = 0;
   });
 
   return button;
