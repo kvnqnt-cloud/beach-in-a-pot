@@ -19,19 +19,22 @@ export function makeHitButton(x, y, width, height, onClick) {
   button.eventMode = "static";
   button.cursor = "pointer";
 
+  // área clicável invisível
   const hit = new PIXI.Graphics();
   hit.beginFill(0xffffff, 0.001);
   hit.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hit.endFill();
 
+  // overlay de hover
   const hoverOverlay = new PIXI.Graphics();
-  hoverOverlay.beginFill(0x000000, 0.4); // 👈 controla intensidade aqui
+  hoverOverlay.beginFill(0x000000, 0.2); // 👈 ajusta opacidade aqui
   hoverOverlay.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hoverOverlay.endFill();
   hoverOverlay.alpha = 0;
 
   button.addChild(hit, hoverOverlay);
 
+  // animação easing real
   let start = 0;
   let from = 0;
   let to = 0;
@@ -52,9 +55,7 @@ export function makeHitButton(x, y, width, height, onClick) {
 
     hoverOverlay.alpha = from + (to - from) * eased;
 
-    if (t >= 1) {
-      start = 0;
-    }
+    if (t >= 1) start = 0;
   };
 
   PIXI.Ticker.shared.add(tickerFn);
@@ -144,7 +145,7 @@ export function makeControlsHint() {
 
   const patch = new PIXI.Graphics();
   patch.beginFill(0x050505, 0.72);
-  patch.drawRoundedRect(-18, -42, 460, 84, 8);
+  patch.drawRoundedRect(-18, -42, 420, 84, 8);
   patch.endFill();
 
   const labelLeft = makeText("use", 38, "left");
@@ -154,21 +155,21 @@ export function makeControlsHint() {
   const keys = new PIXI.Graphics();
   keys.lineStyle(2, 0xffffff, 0.94);
 
-  // caixas melhor alinhadas
-  keys.drawRoundedRect(80, -22, 44, 44, 6);
-  keys.drawRoundedRect(140, -22, 44, 44, 6);
+  const keyY = -22;
+  keys.drawRoundedRect(70, keyY, 44, 44, 6);
+  keys.drawRoundedRect(130, keyY, 44, 44, 6);
 
   const left = makeText("←", 36, "center");
   left.anchor.set(0.5);
-  left.position.set(102, 0);
+  left.position.set(92, 0);
 
   const right = makeText("→", 36, "center");
   right.anchor.set(0.5);
-  right.position.set(162, 0);
+  right.position.set(152, 0);
 
   const labelRight = makeText("to escape oil", 38, "left");
   labelRight.anchor.set(0, 0.5);
-  labelRight.position.set(210, 0);
+  labelRight.position.set(198, 0);
 
   container.addChild(patch, labelLeft, keys, left, right, labelRight);
   return container;
