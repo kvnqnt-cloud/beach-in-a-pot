@@ -19,31 +19,38 @@ export function makeHitButton(x, y, width, height, onClick) {
   button.eventMode = "static";
   button.cursor = "pointer";
 
-  // 🔹 Área clicável invisível
+  // área clicável invisível
   const hit = new PIXI.Graphics();
   hit.beginFill(0xffffff, 0.001);
   hit.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hit.endFill();
 
-  // 🔥 Overlay para efeito de hover (escurecer)
+  // overlay de hover (escurece)
   const hoverOverlay = new PIXI.Graphics();
-  hoverOverlay.beginFill(0x000000, 0.2); // 20% preto ≈ efeito de 80% opacity
+  hoverOverlay.beginFill(0x000000, 0.2);
   hoverOverlay.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hoverOverlay.endFill();
-  hoverOverlay.alpha = 0; // começa invisível
+  hoverOverlay.alpha = 0;
 
   button.addChild(hit, hoverOverlay);
 
-  // ✅ CLICK
+  // estado alvo da animação
+  let targetAlpha = 0;
+
+  // animação suave (ease in/out)
+  PIXI.Ticker.shared.add(() => {
+    hoverOverlay.alpha += (targetAlpha - hoverOverlay.alpha) * 0.2;
+  });
+
+  // eventos
   button.on("pointertap", onClick);
 
-  // 🔥 HOVER SUAVE (fade)
   button.on("pointerover", () => {
-    hoverOverlay.alpha = 1;
+    targetAlpha = 1;
   });
 
   button.on("pointerout", () => {
-    hoverOverlay.alpha = 0;
+    targetAlpha = 0;
   });
 
   return button;
@@ -106,6 +113,7 @@ export function makeSoundToggle(audioManager) {
     await audioManager.toggle();
     redraw();
   });
+
   redraw();
   return container;
 }
