@@ -25,7 +25,7 @@ export function makeHitButton(x, y, width, height, onClick) {
   hit.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hit.endFill();
 
-  // overlay de hover (escurece)
+  // overlay de hover
   const hoverOverlay = new PIXI.Graphics();
   hoverOverlay.beginFill(0x000000, 0.4);
   hoverOverlay.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
@@ -34,10 +34,10 @@ export function makeHitButton(x, y, width, height, onClick) {
 
   button.addChild(hit, hoverOverlay);
 
-  // controle de animação
-  let current = 0;
-  let target = 0;
-  let elapsed = 0;
+  // animação
+  let start = 0;
+  let from = 0;
+  let to = 0;
   const duration = 0.2; // segundos
 
   function easeInOut(t) {
@@ -47,21 +47,16 @@ export function makeHitButton(x, y, width, height, onClick) {
   }
 
   const tickerFn = (ticker) => {
-    const dt = ticker.deltaMS / 1000;
+    if (start === 0) return;
 
-    if (current !== target) {
-      elapsed += dt;
-      let t = Math.min(elapsed / duration, 1);
-      let eased = easeInOut(t);
+    const now = performance.now() / 1000;
+    const t = Math.min((now - start) / duration, 1);
+    const eased = easeInOut(t);
 
-      current = target === 1 ? eased : 1 - eased;
-      hoverOverlay.alpha = current;
+    hoverOverlay.alpha = from + (to - from) * eased;
 
-      if (t >= 1) {
-        current = target;
-        hoverOverlay.alpha = target;
-        elapsed = 0;
-      }
+    if (t >= 1) {
+      start = 0;
     }
   };
 
@@ -71,13 +66,15 @@ export function makeHitButton(x, y, width, height, onClick) {
   button.on("pointertap", onClick);
 
   button.on("pointerover", () => {
-    target = 1;
-    elapsed = 0;
+    from = hoverOverlay.alpha;
+    to = 1;
+    start = performance.now() / 1000;
   });
 
   button.on("pointerout", () => {
-    target = 0;
-    elapsed = 0;
+    from = hoverOverlay.alpha;
+    to = 0;
+    start = performance.now() / 1000;
   });
 
   return button;
