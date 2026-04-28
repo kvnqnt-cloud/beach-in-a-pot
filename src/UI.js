@@ -18,17 +18,26 @@ export function makeHitButton(x, y, width, height, onClick) {
   button.position.set(x, y);
   button.eventMode = "static";
   button.cursor = "pointer";
+
   const hit = new PIXI.Graphics();
   hit.beginFill(0xffffff, 0.001);
   hit.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
   hit.endFill();
-  const glow = new PIXI.Graphics();
-  glow.lineStyle(2, 0xffffff, 0.0);
-  glow.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2);
-  button.addChild(glow, hit);
+
+  button.addChild(hit);
+
+  // ✅ CLICK
   button.on("pointertap", onClick);
-  button.on("pointerover", () => { glow.alpha = 1; glow.clear(); glow.lineStyle(2, 0xffffff, 0.35); glow.drawRoundedRect(-width / 2, -height / 2, width, height, height / 2); });
-  button.on("pointerout", () => { glow.alpha = 0; });
+
+  // 🔥 NOVO HOVER (opacity)
+  button.on("pointerover", () => {
+    button.alpha = 0.8;
+  });
+
+  button.on("pointerout", () => {
+    button.alpha = 1;
+  });
+
   return button;
 }
 
@@ -114,6 +123,7 @@ export function makeControlsHint() {
   const left = makeText("←", 36, "center");
   left.anchor.set(0.5);
   left.position.set(92, -1);
+
   const right = makeText("→", 36, "center");
   right.anchor.set(0.5);
   right.position.set(152, -1);
