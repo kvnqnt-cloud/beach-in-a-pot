@@ -50,7 +50,8 @@ export class MenuScene extends BaseScene {
       this.startHit.alpha = 1;
     });
 
-    this.soundToggle = makeSoundToggle(this.game.audio);
+    // 🔥 AQUI FOI AJUSTADO
+    this.soundToggle = makeSoundToggle(this.game.audio, this.game.textures);
 
     this.container.addChild(
       this.bg,
@@ -85,7 +86,9 @@ export class GameplayScene extends BaseScene {
 
     this.interface = fullSprite(game.textures.gameplayInterface);
     this.hud = new Hud(game.bestScore);
-    this.soundToggle = makeSoundToggle(this.game.audio);
+
+    // 🔥 AQUI FOI AJUSTADO
+    this.soundToggle = makeSoundToggle(this.game.audio, this.game.textures);
 
     this.container.addChild(
       this.bg,
@@ -256,7 +259,8 @@ export class GameOverScene extends BaseScene {
       this.restartHit.alpha = 1;
     });
 
-    this.soundToggle = makeSoundToggle(this.game.audio);
+    // 🔥 AQUI FOI AJUSTADO
+    this.soundToggle = makeSoundToggle(this.game.audio, this.game.textures);
 
     this.container.addChild(
       this.bg,
