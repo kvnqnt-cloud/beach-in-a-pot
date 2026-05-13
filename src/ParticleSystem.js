@@ -34,7 +34,7 @@ function makeBubbleTexture(radius) {
   ctx.lineWidth = 1.4;
   ctx.stroke();
 
-  ctx.fillStyle = "rgba(255,255,255,0.78)");
+  ctx.fillStyle = "rgba(255,255,255,0.78)";
 
   ctx.beginPath();
   ctx.arc(
