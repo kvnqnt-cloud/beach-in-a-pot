@@ -34,7 +34,7 @@ function makeBubbleTexture(radius) {
   ctx.lineWidth = 1.4;
   ctx.stroke();
 
-  ctx.fillStyle = "rgba(255,255,255,0.78)";
+  ctx.fillStyle = "rgba(255,255,255,0.78)");
 
   ctx.beginPath();
   ctx.arc(
@@ -62,6 +62,11 @@ export class ParticleSystem {
       makeBubbleTexture(9),
       makeBubbleTexture(12)
     ];
+
+    // 🌊 textura real de wake
+    this.wakeTexture = PIXI.Texture.from(
+      "assets/images/wake.png"
+    );
   }
 
   spawnBubbleTrail(x, y, amount = 1) {
@@ -98,51 +103,41 @@ export class ParticleSystem {
     }
   }
 
-  // 🌊 WAKE REALISTA
+  // 🌊 WAKE COM PNG REAL
   spawnWake(x, y) {
-    const g = new PIXI.Graphics();
+    const sprite = new PIXI.Sprite(this.wakeTexture);
 
-    const width = rand(60, 160);
-    const height = rand(3, 8);
+    sprite.anchor.set(0.5, 0);
 
-    g.beginFill(0xffffff, rand(0.035, 0.09));
-
-    g.drawRoundedRect(
-      -width * 0.5,
-      -height * 0.5,
-      width,
-      height,
-      height
+    sprite.position.set(
+      x + rand(-12, 12),
+      y + rand(22, 34)
     );
 
-    g.endFill();
+    sprite.alpha = rand(0.045, 0.09);
 
-    // deformação mais orgânica
-    g.scale.y = rand(0.6, 1.4);
+    // tamanho inicial
+    const scale = rand(0.12, 0.22);
 
-    // leve inclinação
-    g.rotation = rand(-0.22, 0.22);
+    sprite.scale.set(scale);
 
-    // posição atrás do peixe
-    g.position.set(
-      x + rand(-26, 26),
-      y + rand(24, 48)
-    );
+    // leve variação
+    sprite.rotation = rand(-0.08, 0.08);
 
-    this.container.addChild(g);
+    this.container.addChild(sprite);
 
     this.particles.push({
-      view: g,
+      view: sprite,
 
-      vx: rand(-12, 12),
+      vx: rand(-4, 4),
 
-      vy: rand(20, 52),
+      vy: rand(28, 52),
 
-      life: rand(0.9, 1.8),
+      life: rand(1.2, 2.2),
 
-      maxLife: 1.8,
+      maxLife: 2.2,
 
-      spin: rand(-0.02, 0.02),
+      spin: rand(-0.01, 0.01),
 
       kind: "wake"
     });
@@ -198,17 +193,20 @@ export class ParticleSystem {
       if (p.kind === "splash") {
         p.vy += 260 * dt;
       } else if (p.kind === "wake") {
-        p.vy += 14 * dt;
+        p.vy += 18 * dt;
       } else {
         p.vy += -5 * dt;
       }
 
-      p.view.alpha = Math.max(0, p.life / p.maxLife);
+      p.view.alpha = Math.max(
+        0,
+        (p.life / p.maxLife) * 0.12
+      );
 
-      // 🌊 expansão cinematográfica do wake
+      // 🌊 expansão orgânica do wake
       if (p.kind === "wake") {
-        p.view.scale.x *= 1 + dt * 0.38;
-        p.view.scale.y *= 1 + dt * 0.12;
+        p.view.scale.x *= 1 + dt * 0.16;
+        p.view.scale.y *= 1 + dt * 0.08;
       } else {
         p.view.scale.x *= 1 + dt * 0.018;
         p.view.scale.y *= 1 + dt * 0.028;
