@@ -98,33 +98,52 @@ export class ParticleSystem {
     }
   }
 
-  // 🌊 NOVO SISTEMA DE WAKE
+  // 🌊 WAKE REALISTA
   spawnWake(x, y) {
     const g = new PIXI.Graphics();
 
-    const w = rand(36, 82);
-    const h = rand(8, 20);
+    const width = rand(60, 160);
+    const height = rand(3, 8);
 
-    g.beginFill(0xffffff, rand(0.03, 0.08));
-    g.drawEllipse(0, 0, w, h);
+    g.beginFill(0xffffff, rand(0.035, 0.09));
+
+    g.drawRoundedRect(
+      -width * 0.5,
+      -height * 0.5,
+      width,
+      height,
+      height
+    );
+
     g.endFill();
 
-    g.rotation = rand(-0.12, 0.12);
+    // deformação mais orgânica
+    g.scale.y = rand(0.6, 1.4);
 
+    // leve inclinação
+    g.rotation = rand(-0.22, 0.22);
+
+    // posição atrás do peixe
     g.position.set(
-      x + rand(-12, 12),
-      y + rand(24, 40)
+      x + rand(-26, 26),
+      y + rand(24, 48)
     );
 
     this.container.addChild(g);
 
     this.particles.push({
       view: g,
-      vx: rand(-8, 8),
-      vy: rand(12, 32),
-      life: rand(0.8, 1.5),
-      maxLife: 1.5,
-      spin: rand(-0.04, 0.04),
+
+      vx: rand(-12, 12),
+
+      vy: rand(20, 52),
+
+      life: rand(0.9, 1.8),
+
+      maxLife: 1.8,
+
+      spin: rand(-0.02, 0.02),
+
       kind: "wake"
     });
   }
@@ -141,6 +160,7 @@ export class ParticleSystem {
       );
 
       g.drawCircle(0, 0, r);
+
       g.endFill();
 
       g.position.set(
@@ -175,21 +195,20 @@ export class ParticleSystem {
 
       p.vx *= 1 - dt * 0.8;
 
-      // 🌊 comportamento específico do wake
       if (p.kind === "splash") {
         p.vy += 260 * dt;
       } else if (p.kind === "wake") {
-        p.vy += 10 * dt;
+        p.vy += 14 * dt;
       } else {
         p.vy += -5 * dt;
       }
 
       p.view.alpha = Math.max(0, p.life / p.maxLife);
 
-      // 🌊 expansão específica do wake
+      // 🌊 expansão cinematográfica do wake
       if (p.kind === "wake") {
-        p.view.scale.x *= 1 + dt * 0.22;
-        p.view.scale.y *= 1 + dt * 0.08;
+        p.view.scale.x *= 1 + dt * 0.38;
+        p.view.scale.y *= 1 + dt * 0.12;
       } else {
         p.view.scale.x *= 1 + dt * 0.018;
         p.view.scale.y *= 1 + dt * 0.028;
