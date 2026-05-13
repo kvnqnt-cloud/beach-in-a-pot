@@ -63,7 +63,6 @@ export class ParticleSystem {
       makeBubbleTexture(12)
     ];
 
-    // 🌊 textura real de wake
     this.wakeTexture = PIXI.Texture.from(
       "assets/images/wake.png"
     );
@@ -103,41 +102,43 @@ export class ParticleSystem {
     }
   }
 
-  // 🌊 WAKE COM PNG REAL
+  // 🌊 WAKE CORRIGIDO
   spawnWake(x, y) {
     const sprite = new PIXI.Sprite(this.wakeTexture);
 
     sprite.anchor.set(0.5, 0);
 
+    // bem próximo do peixe
     sprite.position.set(
-      x + rand(-12, 12),
-      y + rand(22, 34)
+      x + rand(-4, 4),
+      y + rand(10, 18)
     );
 
-    sprite.alpha = rand(0.045, 0.09);
+    // MUITO mais sutil
+    sprite.alpha = rand(0.012, 0.028);
 
-    // tamanho inicial
-    const scale = rand(0.12, 0.22);
+    // escala pequena
+    const scale = rand(0.025, 0.05);
 
     sprite.scale.set(scale);
 
-    // leve variação
-    sprite.rotation = rand(-0.08, 0.08);
+    // quase sem rotação
+    sprite.rotation = rand(-0.015, 0.015);
 
     this.container.addChild(sprite);
 
     this.particles.push({
       view: sprite,
 
-      vx: rand(-4, 4),
+      vx: rand(-1, 1),
 
-      vy: rand(28, 52),
+      vy: rand(8, 18),
 
-      life: rand(1.2, 2.2),
+      life: rand(0.6, 1.1),
 
-      maxLife: 2.2,
+      maxLife: 1.1,
 
-      spin: rand(-0.01, 0.01),
+      spin: 0,
 
       kind: "wake"
     });
@@ -193,20 +194,24 @@ export class ParticleSystem {
       if (p.kind === "splash") {
         p.vy += 260 * dt;
       } else if (p.kind === "wake") {
-        p.vy += 18 * dt;
+        p.vy += 8 * dt;
       } else {
         p.vy += -5 * dt;
       }
 
-      p.view.alpha = Math.max(
-        0,
-        (p.life / p.maxLife) * 0.12
-      );
-
-      // 🌊 expansão orgânica do wake
+      // alpha separado
       if (p.kind === "wake") {
-        p.view.scale.x *= 1 + dt * 0.16;
-        p.view.scale.y *= 1 + dt * 0.08;
+        p.view.alpha =
+          Math.max(0, p.life / p.maxLife) * 0.028;
+      } else {
+        p.view.alpha =
+          Math.max(0, p.life / p.maxLife);
+      }
+
+      // wake cresce MUITO pouco
+      if (p.kind === "wake") {
+        p.view.scale.x *= 1 + dt * 0.025;
+        p.view.scale.y *= 1 + dt * 0.012;
       } else {
         p.view.scale.x *= 1 + dt * 0.018;
         p.view.scale.y *= 1 + dt * 0.028;
