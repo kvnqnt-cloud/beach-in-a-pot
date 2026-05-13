@@ -142,9 +142,19 @@ export class GameplayScene extends BaseScene {
 
     this.player.update(activeDt, this.scrollSpeed / 600);
 
-    if (!this.crashed && Math.random() < activeDt * 8) {
-      this.particles.spawnBubbleTrail(this.player.x, this.player.y, 1);
-    }
+if (!this.crashed && Math.random() < activeDt * 8) {
+  this.particles.spawnBubbleTrail(
+    this.player.x,
+    this.player.y,
+    1
+  );
+
+  // 🌊 wake trail
+  this.particles.spawnWake(
+    this.player.x,
+    this.player.y + 34
+  );
+}
 
     if (!this.crashed && this.spawnTimer <= 0) {
       this.spawnOilWave();
